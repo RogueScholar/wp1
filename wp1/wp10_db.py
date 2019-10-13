@@ -2,7 +2,6 @@ import logging
 import os
 import time
 
-import pymysql
 import pymysql.cursors
 import pymysql.err
 
