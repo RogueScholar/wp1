@@ -15,10 +15,10 @@ try:
 
     def connect():
         kwargs = {
-            'charset': None,
-            'use_unicode': False,
-            'cursorclass': pymysql.cursors.SSDictCursor,
-            **WIKI_CREDS
+            "charset": None,
+            "use_unicode": False,
+            "cursorclass": pymysql.cursors.SSDictCursor,
+            **WIKI_CREDS,
         }
 
         tries = 4
@@ -28,12 +28,14 @@ try:
             except pymysql.err.InternalError:
                 if tries > 0:
                     logging.warning(
-                        'Could not connect to database, retrying in %s seconds',
-                        RETRY_TIME_SECONDS)
+                        "Could not connect to database, retrying in %s seconds",
+                        RETRY_TIME_SECONDS,
+                    )
                     time.sleep(RETRY_TIME_SECONDS)
                     tries -= 1
                 else:
                     raise
+
 
 except ImportError:
     # No creds, so return an empty connect method that will blow up. This is only
