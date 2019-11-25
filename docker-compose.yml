@@ -1,6 +1,5 @@
-version: '3.5'
+version: "3.5"
 services:
-
   redis:
     image: redis
     container_name: wp1bot-redis
@@ -58,7 +57,7 @@ services:
       - LETSENCRYPT_EMAIL=contact@openzim.org
       - HTTPS_METHOD=noredirect
     expose:
-       - 80
+      - 80
     logging:
       driver: "json-file"
       options:
