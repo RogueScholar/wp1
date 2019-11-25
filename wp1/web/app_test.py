@@ -1,7 +1,7 @@
-from base64 import b64encode
 import json
 import os
 import unittest
+from base64 import b64encode
 from unittest.mock import patch
 
 from wp1.web.app import create_app
