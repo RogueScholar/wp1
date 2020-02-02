@@ -1,7 +1,6 @@
 import importlib
-import unittest
-import unittest.mock
 import sys
+import unittest.mock
 
 import pymysql
 

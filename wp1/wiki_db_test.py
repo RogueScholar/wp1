@@ -1,9 +1,8 @@
-import unittest
 import unittest.mock
 
+from wp1 import wiki_db
 from wp1.base_db_test import get_test_connect_creds
 from wp1.environment import Environment
-from wp1 import wiki_db
 
 
 class WikiDbTest(unittest.TestCase):
