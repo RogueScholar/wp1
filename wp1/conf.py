@@ -4,7 +4,7 @@ import json
 
 
 def _get_conf_path():
-    return os.path.join(os.path.dirname(os.path.dirname(__file__)), 'conf.json')
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)), "conf.json")
 
 
 _conf = None

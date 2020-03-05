@@ -7,7 +7,7 @@ from wp1.constants import TS_FORMAT_WP10
 
 @attr.s
 class Project:
-    table_name = 'projects'
+    table_name = "projects"
 
     p_project = attr.ib()
     p_timestamp = attr.ib()
@@ -22,13 +22,13 @@ class Project:
 
     @property
     def timestamp_dt(self):
-        '''The timestamp parsed into a datetime.datetime object.'''
+        """The timestamp parsed into a datetime.datetime object."""
         if self.p_timestamp is None:
             return datetime(1970, 1, 1)
-        return datetime.strptime(self.p_timestamp.decode('utf-8'), TS_FORMAT_WP10)
+        return datetime.strptime(self.p_timestamp.decode("utf-8"), TS_FORMAT_WP10)
 
     def to_web_dict(self):
         return {
-            'name': self.p_project.decode('utf-8').replace('_', ' '),
-            'last_updated': self.p_timestamp.decode('utf-8'),
+            "name": self.p_project.decode("utf-8").replace("_", " "),
+            "last_updated": self.p_timestamp.decode("utf-8"),
         }

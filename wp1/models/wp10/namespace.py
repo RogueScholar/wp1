@@ -11,7 +11,7 @@ class NsType(enum.Enum):
 
 @attr.s
 class Namespace:
-    table_name = 'namespacename'
+    table_name = "namespacename"
 
     domain = attr.ib()
     ns_name = attr.ib()

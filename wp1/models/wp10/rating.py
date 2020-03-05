@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 @attr.s
 class Rating:
-    table_name = 'ratings'
+    table_name = "ratings"
 
     r_project = attr.ib()
     r_namespace = attr.ib()
@@ -24,26 +24,22 @@ class Rating:
     # The timestamp parsed into a datetime.datetime object.
     @property
     def quality_timestamp_dt(self):
-        return datetime.strptime(self.r_quality_timestamp.decode('utf-8'),
-                                 TS_FORMAT)
+        return datetime.strptime(self.r_quality_timestamp.decode("utf-8"), TS_FORMAT)
 
     @property
     def importance_timestamp_dt(self):
-        return datetime.strptime(self.r_importance_timestamp.decode('utf-8'),
-                                 TS_FORMAT)
+        return datetime.strptime(self.r_importance_timestamp.decode("utf-8"), TS_FORMAT)
 
     def set_quality_timestamp_dt(self, dt):
         """Sets the quality_timestamp field using a datetime.datetime object"""
         if dt is None:
-            logger.warning(
-                'Attempt to set rating quality_timestamp to None ignored')
+            logger.warning("Attempt to set rating quality_timestamp to None ignored")
             return
-        self.r_quality_timestamp = dt.strftime(TS_FORMAT).encode('utf-8')
+        self.r_quality_timestamp = dt.strftime(TS_FORMAT).encode("utf-8")
 
     def set_importance_timestamp_dt(self, dt):
         """Sets the quality_timestamp field using a datetime.datetime object"""
         if dt is None:
-            logger.warning(
-                'Attempt to set rating importance_timestamp to None ignored')
+            logger.warning("Attempt to set rating importance_timestamp to None ignored")
             return
-        self.r_importance_timestamp = dt.strftime(TS_FORMAT).encode('utf-8')
+        self.r_importance_timestamp = dt.strftime(TS_FORMAT).encode("utf-8")

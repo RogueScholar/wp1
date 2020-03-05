@@ -9,25 +9,28 @@ from wp1.web.app import create_app
 
 
 class BaseWebTestcase(unittest.TestCase):
-
     def _connect_wp_one_db(self):
-        return pymysql.connect(host='localhost',
-                               db='enwp10_test',
-                               user='root',
-                               charset=None,
-                               use_unicode=False,
-                               cursorclass=pymysql.cursors.DictCursor)
+        return pymysql.connect(
+            host="localhost",
+            db="enwp10_test",
+            user="root",
+            charset=None,
+            use_unicode=False,
+            cursorclass=pymysql.cursors.DictCursor,
+        )
 
     def _connect_wiki_db(self):
-        return pymysql.connect(host='localhost',
-                               db='enwikip_test',
-                               user='root',
-                               charset=None,
-                               use_unicode=False,
-                               cursorclass=pymysql.cursors.DictCursor)
+        return pymysql.connect(
+            host="localhost",
+            db="enwikip_test",
+            user="root",
+            charset=None,
+            use_unicode=False,
+            cursorclass=pymysql.cursors.DictCursor,
+        )
 
     def _cleanup_wp_one_db(self):
-        stmts = parse_sql('wp10_test.down.sql')
+        stmts = parse_sql("wp10_test.down.sql")
         with self.wp10db.cursor() as cursor:
             for stmt in stmts:
                 cursor.execute(stmt)
@@ -36,14 +39,14 @@ class BaseWebTestcase(unittest.TestCase):
 
     def _setup_wp_one_db(self):
         self.wp10db = self._connect_wp_one_db()
-        stmts = parse_sql('wp10_test.up.sql')
+        stmts = parse_sql("wp10_test.up.sql")
         with self.wp10db.cursor() as cursor:
             for stmt in stmts:
                 cursor.execute(stmt)
         self.wp10db.commit()
 
     def _cleanup_wiki_db(self):
-        stmts = parse_sql('wiki_test.down.sql')
+        stmts = parse_sql("wiki_test.down.sql")
         with self.wikidb.cursor() as cursor:
             for stmt in stmts:
                 cursor.execute(stmt)
@@ -52,7 +55,7 @@ class BaseWebTestcase(unittest.TestCase):
 
     def _setup_wiki_db(self):
         self.wikidb = self._connect_wiki_db()
-        stmts = parse_sql('wiki_test.up.sql')
+        stmts = parse_sql("wiki_test.up.sql")
         with self.wikidb.cursor() as cursor:
             for stmt in stmts:
                 cursor.execute(stmt)
@@ -66,14 +69,12 @@ class BaseWebTestcase(unittest.TestCase):
         self._setup_wp_one_db()
 
         self.app = create_app()
-        self.app.config['TESTING'] = True
+        self.app.config["TESTING"] = True
 
     @contextmanager
     def override_db(self, app):
-
         @contextmanager
         def set_wiki_db():
-
             def handler(sender, **kwargs):
                 g.wikidb = self._connect_wiki_db()
 
@@ -82,7 +83,6 @@ class BaseWebTestcase(unittest.TestCase):
 
         @contextmanager
         def set_wp10_db():
-
             def handler(sender, **kwargs):
                 g.wp10db = self._connect_wp_one_db()
 

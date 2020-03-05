@@ -8,10 +8,9 @@ class RateLimitQueue(Queue):
 
     @classmethod
     def dequeue_any(cls, queues, timeout, connection=None, job_class=None):
-        job, queue = super().dequeue_any(queues,
-                                         timeout,
-                                         connection=connection,
-                                         job_class=job_class)
+        job, queue = super().dequeue_any(
+            queues, timeout, connection=connection, job_class=job_class
+        )
         if job and queue:
             cur_time = int(time.time())
             time_diff = 0

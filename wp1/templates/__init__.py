@@ -5,6 +5,8 @@ def commas(n):
     return "{:,d}".format(n)
 
 
-env = Environment(loader=PackageLoader('wp1', 'templates'),
-                  autoescape=select_autoescape(['html', 'xml']))
-env.filters['commas'] = commas
+env = Environment(
+    loader=PackageLoader("wp1", "templates"),
+    autoescape=select_autoescape(["html", "xml"]),
+)
+env.filters["commas"] = commas
