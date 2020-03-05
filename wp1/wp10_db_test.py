@@ -1,9 +1,8 @@
-import unittest
 import unittest.mock
 
+from wp1 import wp10_db
 from wp1.base_db_test import get_test_connect_creds
 from wp1.environment import Environment
-from wp1 import wp10_db
 
 
 class Wp10DbTest(unittest.TestCase):

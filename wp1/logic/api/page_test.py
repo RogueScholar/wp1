@@ -1,7 +1,8 @@
-from datetime import datetime
 import time
 import unittest
-from unittest.mock import MagicMock, patch
+from datetime import datetime
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import wp1.logic.api.page as api_page
 

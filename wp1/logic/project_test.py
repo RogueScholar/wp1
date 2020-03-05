@@ -1,17 +1,17 @@
+import time
 from datetime import datetime
 from unittest.mock import patch
-import time
 
 import attr
 
-from wp1.base_db_test import BaseWpOneDbTest, BaseWikiDbTest, BaseCombinedDbTest
+from wp1.base_db_test import BaseCombinedDbTest
+from wp1.base_db_test import BaseWikiDbTest
+from wp1.base_db_test import BaseWpOneDbTest
 from wp1.conf import get_conf
-from wp1.constants import (
-    AssessmentKind,
-    CATEGORY_NS_INT,
-    GLOBAL_TIMESTAMP_WIKI,
-    TS_FORMAT,
-)
+from wp1.constants import AssessmentKind
+from wp1.constants import CATEGORY_NS_INT
+from wp1.constants import GLOBAL_TIMESTAMP_WIKI
+from wp1.constants import TS_FORMAT
 from wp1.logic import project as logic_project
 from wp1.models.wiki.page import Page
 from wp1.models.wp10.category import Category

@@ -1,16 +1,15 @@
-from collections import defaultdict
-from datetime import datetime, timedelta
 import re
+from collections import defaultdict
+from datetime import datetime
+from datetime import timedelta
 
 from wp1 import api
 from wp1.conf import get_conf
-from wp1.constants import (
-    LOG_NS,
-    LOG_DATE_FORMAT,
-    TS_FORMAT,
-    TS_FORMAT_WP10,
-    MAX_LOGS_PER_DAY,
-)
+from wp1.constants import LOG_DATE_FORMAT
+from wp1.constants import LOG_NS
+from wp1.constants import MAX_LOGS_PER_DAY
+from wp1.constants import TS_FORMAT
+from wp1.constants import TS_FORMAT_WP10
 from wp1.logic.util import int_to_ns
 from wp1.models.wp10.log import Log
 from wp1.templates import env as jinja_env

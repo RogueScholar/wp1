@@ -6,12 +6,10 @@ import attr
 from wp1 import tables
 from wp1 import templates
 from wp1.base_db_test import BaseWpOneDbTest
-from wp1.constants import (
-    AssessmentKind,
-    CATEGORY_NS_INT,
-    GLOBAL_TIMESTAMP_WIKI,
-    TS_FORMAT,
-)
+from wp1.constants import AssessmentKind
+from wp1.constants import CATEGORY_NS_INT
+from wp1.constants import GLOBAL_TIMESTAMP_WIKI
+from wp1.constants import TS_FORMAT
 from wp1.models.wp10.category import Category
 from wp1.models.wp10.rating import Rating
 

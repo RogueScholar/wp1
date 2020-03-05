@@ -1,14 +1,15 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 
-from wp1.constants import TS_FORMAT, GLOBAL_TIMESTAMP
-from wp1.models.wiki.page import Page
-from wp1.models.wp10.log import Log
-from wp1.models.wp10.move import Move
+import wp1.logic.util as logic_util
+from wp1.constants import GLOBAL_TIMESTAMP
+from wp1.constants import TS_FORMAT
 from wp1.logic import log as logic_log
 from wp1.logic import move as logic_move
 from wp1.logic.api import page as api_page
-import wp1.logic.util as logic_util
+from wp1.models.wiki.page import Page
+from wp1.models.wp10.log import Log
+from wp1.models.wp10.move import Move
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,11 @@
-from datetime import datetime
 import logging
 import re
 import time
+from datetime import datetime
 
+import wp1.logic.util as logic_util
 from wp1.api import site
 from wp1.constants import TS_FORMAT
-import wp1.logic.util as logic_util
 
 logger = logging.getLogger(__name__)
 RE_NAMESPACE = re.compile(r"^([^:]+:)")

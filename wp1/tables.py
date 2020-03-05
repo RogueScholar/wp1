@@ -1,5 +1,5 @@
-from collections import defaultdict
 import logging
+from collections import defaultdict
 
 from wp1 import api
 from wp1.conf import get_conf

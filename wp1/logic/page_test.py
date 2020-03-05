@@ -1,18 +1,21 @@
+import time
 from datetime import datetime
 from unittest.mock import patch
-import time
 
 import attr
 
-from wp1.base_db_test import BaseWikiDbTest, BaseWpOneDbTest, BaseCombinedDbTest
+from wp1.base_db_test import BaseCombinedDbTest
+from wp1.base_db_test import BaseWikiDbTest
+from wp1.base_db_test import BaseWpOneDbTest
 from wp1.constants import TS_FORMAT
 from wp1.logic import page as logic_page
 from wp1.logic import project as logic_project
+from wp1.models.wiki.page import Page
 from wp1.models.wp10.log import Log
 from wp1.models.wp10.move import Move
-from wp1.models.wp10.namespace import Namespace, NsType
+from wp1.models.wp10.namespace import Namespace
+from wp1.models.wp10.namespace import NsType
 from wp1.models.wp10.project import Project
-from wp1.models.wiki.page import Page
 
 
 def get_all_moves(wp10db):

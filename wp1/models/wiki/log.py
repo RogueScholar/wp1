@@ -1,7 +1,10 @@
 import datetime
 
 from sqlalchemy import Column
-from sqlalchemy.dialects.mysql import BIGINT, BINARY, BLOB, INTEGER
+from sqlalchemy.dialects.mysql import BIGINT
+from sqlalchemy.dialects.mysql import BINARY
+from sqlalchemy.dialects.mysql import BLOB
+from sqlalchemy.dialects.mysql import INTEGER
 
 from wp1.wiki_db import Base
 

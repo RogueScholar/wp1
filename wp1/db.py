@@ -2,11 +2,11 @@ import logging
 import os
 import time
 
-import pymysql
 import pymysql.cursors
 import pymysql.err
 
-from wp1.credentials import CREDENTIALS, ENV
+from wp1.credentials import CREDENTIALS
+from wp1.credentials import ENV
 
 logger = logging.getLogger(__name__)
 

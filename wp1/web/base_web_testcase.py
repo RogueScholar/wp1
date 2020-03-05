@@ -1,8 +1,9 @@
-from contextlib import contextmanager
 import unittest
+from contextlib import contextmanager
 
-from flask import appcontext_pushed, g
 import pymysql
+from flask import appcontext_pushed
+from flask import g
 
 from wp1.base_db_test import parse_sql
 from wp1.web.app import create_app

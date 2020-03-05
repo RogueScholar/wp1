@@ -1,6 +1,5 @@
-import os
-
 import json
+import os
 
 
 def _get_conf_path():

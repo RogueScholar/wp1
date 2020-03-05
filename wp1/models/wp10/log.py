@@ -2,7 +2,8 @@ from datetime import datetime
 
 import attr
 
-from wp1.constants import TS_FORMAT, TS_FORMAT_WP10
+from wp1.constants import TS_FORMAT
+from wp1.constants import TS_FORMAT_WP10
 
 
 @attr.s

@@ -1,8 +1,8 @@
 import attr
 import flask
 
-from wp1.web.db import get_db
 import wp1.logic.project as logic_project
+from wp1.web.db import get_db
 
 projects = flask.Blueprint("projects", __name__)
 
