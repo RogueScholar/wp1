@@ -37,4 +37,3 @@ CREATE TABLE `revision` (
     `rev_content_model` varbinary (32) DEFAULT NULL,
     `rev_content_format` varbinary (64) DEFAULT NULL
 );
-

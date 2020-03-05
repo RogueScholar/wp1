@@ -204,4 +204,3 @@ CREATE TABLE `reviews` (
     `rev_timestamp` BINARY (20) DEFAULT NULL,
     PRIMARY KEY (`rev_article`),
     KEY `rev_value` (`rev_value`)) ENGINE = InnoDB DEFAULT CHARSET = latin1;
-

@@ -15,4 +15,3 @@ DROP TABLE IF EXISTS `releases`;
 DROP TABLE IF EXISTS `global_articles`;
 
 DROP TABLE IF EXISTS `global_rankings`;
-
