@@ -10,85 +10,89 @@ from wp1.web.app import create_app
 
 
 class BaseWebTestcase(unittest.TestCase):
-    def _connect_wp_one_db(self):
-        return pymysql.connect(
-            host="localhost",
-            db="enwp10_test",
-            user="root",
-            charset=None,
-            use_unicode=False,
-            cursorclass=pymysql.cursors.DictCursor,
-        )
 
-    def _connect_wiki_db(self):
-        return pymysql.connect(
-            host="localhost",
-            db="enwikip_test",
-            user="root",
-            charset=None,
-            use_unicode=False,
-            cursorclass=pymysql.cursors.DictCursor,
-        )
+  def _connect_wp_one_db(self):
+    return pymysql.connect(
+        host="localhost",
+        db="enwp10_test",
+        user="root",
+        charset=None,
+        use_unicode=False,
+        cursorclass=pymysql.cursors.DictCursor,
+    )
 
-    def _cleanup_wp_one_db(self):
-        stmts = parse_sql("wp10_test.down.sql")
-        with self.wp10db.cursor() as cursor:
-            for stmt in stmts:
-                cursor.execute(stmt)
-        self.wp10db.commit()
-        self.wp10db.close()
+  def _connect_wiki_db(self):
+    return pymysql.connect(
+        host="localhost",
+        db="enwikip_test",
+        user="root",
+        charset=None,
+        use_unicode=False,
+        cursorclass=pymysql.cursors.DictCursor,
+    )
 
-    def _setup_wp_one_db(self):
-        self.wp10db = self._connect_wp_one_db()
-        stmts = parse_sql("wp10_test.up.sql")
-        with self.wp10db.cursor() as cursor:
-            for stmt in stmts:
-                cursor.execute(stmt)
-        self.wp10db.commit()
+  def _cleanup_wp_one_db(self):
+    stmts = parse_sql("wp10_test.down.sql")
+    with self.wp10db.cursor() as cursor:
+      for stmt in stmts:
+        cursor.execute(stmt)
+    self.wp10db.commit()
+    self.wp10db.close()
 
-    def _cleanup_wiki_db(self):
-        stmts = parse_sql("wiki_test.down.sql")
-        with self.wikidb.cursor() as cursor:
-            for stmt in stmts:
-                cursor.execute(stmt)
-        self.wikidb.commit()
-        self.wikidb.close()
+  def _setup_wp_one_db(self):
+    self.wp10db = self._connect_wp_one_db()
+    stmts = parse_sql("wp10_test.up.sql")
+    with self.wp10db.cursor() as cursor:
+      for stmt in stmts:
+        cursor.execute(stmt)
+    self.wp10db.commit()
 
-    def _setup_wiki_db(self):
-        self.wikidb = self._connect_wiki_db()
-        stmts = parse_sql("wiki_test.up.sql")
-        with self.wikidb.cursor() as cursor:
-            for stmt in stmts:
-                cursor.execute(stmt)
-        self.wikidb.commit()
+  def _cleanup_wiki_db(self):
+    stmts = parse_sql("wiki_test.down.sql")
+    with self.wikidb.cursor() as cursor:
+      for stmt in stmts:
+        cursor.execute(stmt)
+    self.wikidb.commit()
+    self.wikidb.close()
 
-    def setUp(self):
-        self.addCleanup(self._cleanup_wiki_db)
-        self._setup_wiki_db()
+  def _setup_wiki_db(self):
+    self.wikidb = self._connect_wiki_db()
+    stmts = parse_sql("wiki_test.up.sql")
+    with self.wikidb.cursor() as cursor:
+      for stmt in stmts:
+        cursor.execute(stmt)
+    self.wikidb.commit()
 
-        self.addCleanup(self._cleanup_wp_one_db)
-        self._setup_wp_one_db()
+  def setUp(self):
+    self.addCleanup(self._cleanup_wiki_db)
+    self._setup_wiki_db()
 
-        self.app = create_app()
-        self.app.config["TESTING"] = True
+    self.addCleanup(self._cleanup_wp_one_db)
+    self._setup_wp_one_db()
+
+    self.app = create_app()
+    self.app.config["TESTING"] = True
+
+  @contextmanager
+  def override_db(self, app):
 
     @contextmanager
-    def override_db(self, app):
-        @contextmanager
-        def set_wiki_db():
-            def handler(sender, **kwargs):
-                g.wikidb = self._connect_wiki_db()
+    def set_wiki_db():
 
-            with appcontext_pushed.connected_to(handler, app):
-                yield
+      def handler(sender, **kwargs):
+        g.wikidb = self._connect_wiki_db()
 
-        @contextmanager
-        def set_wp10_db():
-            def handler(sender, **kwargs):
-                g.wp10db = self._connect_wp_one_db()
+      with appcontext_pushed.connected_to(handler, app):
+        yield
 
-            with appcontext_pushed.connected_to(handler, app):
-                yield
+    @contextmanager
+    def set_wp10_db():
 
-        with set_wiki_db(), set_wp10_db():
-            yield
+      def handler(sender, **kwargs):
+        g.wp10db = self._connect_wp_one_db()
+
+      with appcontext_pushed.connected_to(handler, app):
+        yield
+
+    with set_wiki_db(), set_wp10_db():
+      yield

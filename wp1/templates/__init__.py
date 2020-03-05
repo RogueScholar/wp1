@@ -4,7 +4,7 @@ from jinja2 import select_autoescape
 
 
 def commas(n):
-    return "{:,d}".format(n)
+  return "{:,d}".format(n)
 
 
 env = Environment(
