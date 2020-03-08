@@ -4,10 +4,10 @@ import sys
 from redis import Redis
 from rq import Queue
 
-from wp1 import constants
-from wp1.environment import Environment
 import wp1.logic.project as logic_project
+from wp1 import constants
 from wp1 import tables
+from wp1.environment import Environment
 
 logger = logging.getLogger(__name__)
 
