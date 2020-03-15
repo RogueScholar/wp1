@@ -13,18 +13,16 @@ Vue.config.productionTip = false;
 Vue.use(VueRouter);
 
 const routes = [
-  { path: '/', component: IndexPage },
-  { path: '/project/:projectName', component: ProjectPage }
+  {path : '/', component : IndexPage},
+  {path : '/project/:projectName', component : ProjectPage}
 ];
 
-const router = new VueRouter({
-  routes
-});
+const router = new VueRouter({routes});
 
 new Vue({
-  el: '#app',
-  render: h => h(App),
+  el : '#app',
+  render : h => h(App),
   router,
-  template: '<App/>',
-  components: { App }
+  template : '<App/>',
+  components : {App}
 });
