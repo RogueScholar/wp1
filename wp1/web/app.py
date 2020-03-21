@@ -1,6 +1,7 @@
-from datetime import datetime
-from functools import wraps, update_wrapper
 import os
+from datetime import datetime
+from functools import update_wrapper
+from functools import wraps
 
 import flask
 import flask_cors
@@ -9,7 +10,8 @@ import rq_dashboard
 from rq_dashboard.cli import add_basic_auth
 
 import wp1.logic.project as logic_project
-from wp1.web.db import get_db, has_db
+from wp1.web.db import get_db
+from wp1.web.db import has_db
 from wp1.web.projects import projects
 
 
