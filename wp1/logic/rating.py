@@ -1,7 +1,6 @@
 import logging
 
 import attr
-
 from wp1.conf import get_conf
 from wp1.constants import GLOBAL_TIMESTAMP, AssessmentKind
 from wp1.logic import log as logic_log
