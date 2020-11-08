@@ -1,13 +1,12 @@
 import attr
 import flask
 
+import wp1.logic.project as logic_project
+import wp1.logic.rating as logic_rating
+from wp1 import queues, tables
 from wp1.constants import PAGE_SIZE
 from wp1.web.db import get_db
 from wp1.web.redis import get_redis
-import wp1.logic.project as logic_project
-import wp1.logic.rating as logic_rating
-from wp1 import queues
-from wp1 import tables
 
 projects = flask.Blueprint("projects", __name__)
 

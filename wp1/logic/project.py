@@ -1,35 +1,28 @@
-from collections import defaultdict
 import logging
 import math
 import re
 import time
+from collections import defaultdict
 
 import attr
 
-from wp1 import api
+from wp1 import api, tables
 from wp1.conf import get_conf
-from wp1.constants import (
-    AssessmentKind,
-    CATEGORY_NS_INT,
-    GLOBAL_TIMESTAMP,
-    GLOBAL_TIMESTAMP_WIKI,
-    MAX_ARTICLES_BEFORE_COMMIT,
-)
-from wp1.logic import (
-    page as logic_page,
-    util as logic_util,
-    rating as logic_rating,
-    category as logic_category,
-)
+from wp1.constants import (CATEGORY_NS_INT, GLOBAL_TIMESTAMP,
+                           GLOBAL_TIMESTAMP_WIKI, MAX_ARTICLES_BEFORE_COMMIT,
+                           AssessmentKind)
+from wp1.logic import category as logic_category
+from wp1.logic import page as logic_page
+from wp1.logic import rating as logic_rating
+from wp1.logic import util as logic_util
 from wp1.logic.api import project as api_project
 from wp1.models.wiki.page import Page
 from wp1.models.wp10.category import Category
 from wp1.models.wp10.project import Project
 from wp1.models.wp10.rating import Rating
 from wp1.redis_db import connect as redis_connect
-from wp1 import tables
-from wp1.wp10_db import connect as wp10_connect
 from wp1.wiki_db import connect as wiki_connect
+from wp1.wp10_db import connect as wp10_connect
 
 logger = logging.getLogger(__name__)
 
