@@ -85,7 +85,7 @@ export default {
       );
     },
     errorPage: function() {
-      return isNaN(this.page) || this.page < 0;
+      return isNaN(this.page) || this.page < 1;
     }
   },
   methods: {
@@ -107,7 +107,7 @@ export default {
   },
   watch: {
     $route: function(to) {
-      this.rows = to.query.rows || 100;
+      this.rows = to.query.numRows || 100;
       this.page = to.query.page || 1;
     }
   }

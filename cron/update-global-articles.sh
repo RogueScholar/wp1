@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export PATH=/usr/local/bin:$PATH
+export PATH=/usr/local/bin:"$PATH"
 cd /usr/src/app
 
 exec 200>/run/lock/update-global-articles.cron.lock

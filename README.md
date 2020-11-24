@@ -1,12 +1,11 @@
 # Wikipedia 1.0 engine
 
-This directory contains the code of Wikipedia 1.0 supporting
-software. More information about the Wikipedia 1.0 project can be
-found [on the Wikipedia in
-English](https://en.wikipedia.org/wiki/Wikipedia:Version_1.0_Editorial_Team).
+This directory contains the code of Wikipedia 1.0 supporting software. More
+information about the Wikipedia 1.0 project can be found
+[on the Wikipedia in English](https://en.wikipedia.org/wiki/Wikipedia:Version_1.0_Editorial_Team).
 
-[![Build Status](https://travis-ci.com/openzim/wp1.svg?branch=master)](https://travis-ci.com/openzim/wp1)
-[![codecov](https://codecov.io/gh/openzim/wp1/branch/master/graph/badge.svg)](https://codecov.io/gh/openzim/wp1)
+[![Build Status](https://travis-ci.com/openzim/wp1.svg?branch=main)](https://travis-ci.com/openzim/wp1)
+[![codecov](https://codecov.io/gh/openzim/wp1/branch/main/graph/badge.svg)](https://codecov.io/gh/openzim/wp1)
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/wp1/badge)](https://www.codefactor.io/repository/github/openzim/wp1)
 [![Docker Web Build Status](https://img.shields.io/docker/cloud/build/openzim/wp1bot-web?label=docker%20web%20build)](https://cloud.docker.com/u/openzim/repository/docker/openzim/wp1bot-web)
 [![Docker Worker Build Status](https://img.shields.io/docker/cloud/build/openzim/wp1bot-workers?label=docker%20workers%20build)](https://cloud.docker.com/u/openzim/repository/docker/openzim/wp1bot-workers)
@@ -15,61 +14,58 @@ English](https://en.wikipedia.org/wiki/Wikipedia:Version_1.0_Editorial_Team).
 
 ## Contents
 
-The `wp1` subdirectory includes code for updating the `enwp10`
-database, specifically the `ratings` table (but also other
-tables). The library code itself isn't directly runnable, but instead
-is loaded and run in various docker images that are maintained in the
-`docker` directory.
+The `wp1` subdirectory includes code for updating the `enwp10` database,
+specifically the `ratings` table (but also other tables). The library code
+itself isn't directly runnable, but instead is loaded and run in various docker
+images that are maintained in the `docker` directory.
 
-`requirements.txt` is a list of python dependencies in pip format that
-need to be installed in a virtual env in order to run the library code.
-Both the `web` and `workers` docker images use the same requirements,
-though [Flask](https://www.palletsprojects.com/p/flask/) and its
-dependencies are not utilized by the worker code.
+`requirements.txt` is a list of python dependencies in pip format that need to
+be installed in a virtual env in order to run the library code. Both the `web`
+and `workers` docker images use the same requirements, though
+[Flask](https://www.palletsprojects.com/p/flask/) and its dependencies are not
+utilized by the worker code.
 
-The `cron` directory contains wrapper scripts for cron jobs that are
-run [inside the workers image](https://github.com/openzim/wp1/blob/master/docker/workers/Dockerfile#L15).
+The `cron` directory contains wrapper scripts for cron jobs that are run
+[inside the workers image](https://github.com/openzim/wp1/blob/master/docker/workers/Dockerfile#L15).
 
-The `setup` directory contains a historical record of the database
-schema used by the tool for what is refered to in code as the `wp10`
-database. This file has been heavily edited, but should be able to be
-used to re-create the `enwp10` database if necessary.
+The `setup` directory contains a historical record of the database schema used
+by the tool for what is refered to in code as the `wp10` database. This file has
+been heavily edited, but should be able to be used to re-create the `enwp10`
+database if necessary.
 
-`wp1-frontend` contains the code for the Vue-CLI based frontend,
-which is encapsulated and served from the `frontend` docker image.
-See that directory for instructions on how to setup a development
-environment for the frontend.
+`wp1-frontend` contains the code for the Vue-CLI based frontend, which is
+encapsulated and served from the `frontend` docker image. See that directory for
+instructions on how to setup a development environment for the frontend.
 
-`conf.json` is a configuration file that is used by the `wp1`
-library code.
+`conf.json` is a configuration file that is used by the `wp1` library code.
 
 `docker-compose.yml` is a file read by the `docker-compose`
-[command](https://docs.docker.com/compose/) in order to generate the
-graph of required docker images that represent the production environment.
+[command](https://docs.docker.com/compose/) in order to generate the graph of
+required docker images that represent the production environment.
 
-`docker-compose-dev.yml` is a similar file which sets up a dev environment,
-with Redis and a MariaDB server for the `enwp10` database. Use it like so
+`docker-compose-dev.yml` is a similar file which sets up a dev environment, with
+Redis and a MariaDB server for the `enwp10` database. Use it like so
 
 ```bash
 docker-compose -f docker-compose-dev.yml up -d
 ```
 
-The `*.dockerfile` symlinks allow for each docker image in this repository
-to be more easily built on [Docker Hub](https://hub.docker.com/). See:
+The `*.dockerfile` symlinks allow for each docker image in this repository to be
+more easily built on [Docker Hub](https://hub.docker.com/). See:
 
 - https://hub.docker.com/repository/docker/openzim/wp1bot-frontend
 - https://hub.docker.com/repository/docker/openzim/wp1bot-workers
 - https://hub.docker.com/repository/docker/openzim/wp1bot-web
 
-`openapi.yml` is a YAML file that describes the API of the `web` image
-in [OpenAPI](https://swagger.io/specification/) format. If you visit
-the [index of the API server](https://api.wp1.openzim.org) you will
-get a swagger-ui documentation frontend that utilizes this file. It
-is symlinked into the `wp1/web` directory.
+`openapi.yml` is a YAML file that describes the API of the `web` image in
+[OpenAPI](https://swagger.io/specification/) format. If you visit the
+[index of the API server](https://api.wp1.openzim.org) you will get a swagger-ui
+documentation frontend that utilizes this file. It is symlinked into the
+`wp1/web` directory.
 
-The `wp10_test.*.sql` and `wiki_test.*.sql` files are rough
-approximations of the schemas of the two databases that the library
-interfaces with. They are used for unit testing.
+The `wp10_test.*.sql` and `wiki_test.*.sql` files are rough approximations of
+the schemas of the two databases that the library interfaces with. They are used
+for unit testing.
 
 ## Installation
 
@@ -96,55 +92,110 @@ You should see your prompt change, with a `(venv)` appended to the front.
 
 ### Installing requirements
 
-To install the requirements, make sure you are in your virtualenv as
-explained above, then use the following command:
+To install the requirements, make sure you are in your virtualenv as explained
+above, then use the following command:
 
 ```bash
 pip3 install -r requirements.txt
 ```
 
+### Installing frontend requirements
+
+To install the requirements for the frontend server, cd into `wp1-frontend` and
+use:
+
+```bash
+yarn install
+```
+
+### Docker
+
+You will also need to have [Docker](https://www.docker.com/) on your system in
+order to run the development server.
+
 ### Running the tests
 
-The tests expect a localhost MariaDB or MySQL instance on the default
-port, with a user of 'root' and no password. You also need two databases:
-`enwp10_test` and `enwikip_test`. They can use default settings and be
-empty.
+The tests expect a localhost MariaDB or MySQL instance on the default port, with
+a user of 'root' and no password. You also need two databases: `enwp10_test` and
+`enwikip_test`. They can use default settings and be empty.
 
-If you have that, and you've already installed the requirements above,
-you should be able to simply run the following command from this
-directory to run the tests:
+If you have that, and you've already installed the requirements above, you
+should be able to simply run the following command from this directory to run
+the tests:
 
 ```bash
 nosetests
 ```
 
-If you'd like to use a different MySQL user or non-default password for
-the tests, you must edit `_setup_wp_one_db` and `_setup_wp_one_db` in
+If you'd like to use a different MySQL user or non-default password for the
+tests, you must edit `_setup_wp_one_db` and `_setup_wp_one_db` in
 `base_db_test.py`.
 
 ### Populating the credentials module
 
-The script needs access to the enwiki_p replica database (referred to
-in the code as `wikidb`), as well as its own toolsdb application database
-(referred to in the code as `wp10db`). If you are a part of the toolforge
-`enwp10` [project](https://tools.wmflabs.org/admin/tool/enwp10), you can
-find the credentials for these on toolforge in the replica.my.cnf file in
-the tool's home directory. They need to be formatted in a way that is
-consumable by the library and pymysql. Look at `credentials.py.example`
-and create a copy called `credentials.py` with the relevant information
-filled in. The production version of this code also requires Englis Wikipedia
-API credentials for automatically editing and updating
+The script needs access to the enwiki_p replica database (referred to in the
+code as `wikidb`), as well as its own toolsdb application database (referred to
+in the code as `wp10db`). If you are a part of the toolforge `enwp10`
+[project](https://tools.wmflabs.org/admin/tool/enwp10), you can find the
+credentials for these on toolforge in the replica.my.cnf file in the tool's home
+directory. They need to be formatted in a way that is consumable by the library
+and pymysql. Look at `credentials.py.example` and create a copy called
+`credentials.py` with the relevant information filled in. The production version
+of this code also requires English Wikipedia API credentials for automatically
+editing and updating
 [tables like this one](https://en.wikipedia.org/wiki/User:WP_1.0_bot/Tables/Project/Catholicism).
-Currently, if your environment is DEVELOPMENT, jobs that utilize the API
-to edit Wikipedia are disabled. There is no development wiki that gets edited
-at this time.
+Currently, if your environment is DEVELOPMENT, jobs that utilize the API to edit
+Wikipedia are disabled. There is no development wiki that gets edited at this
+time.
 
-## Updating production
+# Development
 
-- Log in to the box that contains the production docker images. It is
-  called wp1.
+For development, you will need to have Docker installed as explained above.
+
+## Running docker-compose
+
+There is a Docker setup for a development database. It lives in
+`docker-compose-dev.yml`. To download the database and setup development MariaDB
+and Redis, use:
+
+```bash
+docker-compose -f docker-compose-dev.yml up -d
+```
+
+## Starting the API server
+
+Assuming you are in your Python virtualenv (described above) you can start the
+API server with:
+
+```bash
+FLASK_DEBUG=1 FLASK_APP=wp1.web.app flask run
+```
+
+## Starting the web frontend
+
+The web frontend can be started with the following command in the `wp1-frontend`
+directory:
+
+```bash
+yarn serve
+```
+
+## Development credentials.py
+
+The DEVELOPMENT section of credentials.py.example is already filled out with the
+proper values for the servers listed in docker-compose-dev.yml. You should be
+able to simply copy it to credentials.py.
+
+If you wish to connect to a wiki replica database on toolforge, you will need to
+fill out your credentials in WIKIDB section. This is not required for developing
+the frontend.
+
+# Updating production
+
+- Log in to the box that contains the production docker images. It is called
+  wp1.
 - `cd /data/code/wp1/`
-- `sudo git pull origin master`
+- `sudo git pull origin main`
 - Pull the docker images from docker hub:
   - `docker pull openzim/wp1bot-workers`
   - `docker pull openzim/wp1bot-web`
@@ -153,13 +204,13 @@ at this time.
 
 # Pre-commit hooks
 
-This project is configured to use git pre-commit hooks managed by the
-Python program `pre-commit` ([website](https://pre-commit.com/)). Pre-
-commit checks let us ensure that the code is properly formatted with
+This project is configured to use git pre-commit hooks managed by the Python
+program `pre-commit` ([website](https://pre-commit.com/)). Pre- commit checks
+let us ensure that the code is properly formatted with
 [yapf](https://github.com/google/yapf) amongst other things.
 
-If you've installed the requirements for this repository, the pre-commit
-binary should be available to you. To install the hooks, use:
+If you've installed the requirements for this repository, the pre-commit binary
+should be available to you. To install the hooks, use:
 
 ```bash
 pre-commit install
