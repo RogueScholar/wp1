@@ -37,7 +37,6 @@ services:
       - 6555
     volumes:
       - /data/wp1bot/credentials.py:/usr/src/app/wp1/credentials.py
-      - /data/wp1bot/rq-credentials.txt:/usr/src/app/rq-credentials.txt
     links:
       - redis
     logging:
@@ -106,7 +105,7 @@ services:
     restart: always
 
   backup:
-    image: kiwix/borg-backup:latest
+    image: ghcr.io/kiwix/borg-backup:latest
     env_file:
       - /data/wp1bot/db/.wp1db_backup.env
     restart: always

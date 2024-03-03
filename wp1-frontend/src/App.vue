@@ -1,8 +1,9 @@
 <template>
   <div>
     <div class="alert alert-info my-0" role="alert">
-      Welcome to the latest version of the WP 1.0 tool! Please provide all
-      feedback and feature requests for this tool on
+      Welcome to the latest version of WP 1.0! Documentation is on
+      <a href="https://wp1.readthedocs.io/en/latest/">read the docs</a>. Please
+      provide all feedback on
       <a
         href="https://en.wikipedia.org/wiki/Wikipedia_talk:Version_1.0_Editorial_Team/Index"
         >English Wikipedia</a
@@ -27,11 +28,11 @@
           <li
             :class="
               'nav-item ' +
-                (!this.$route.path.startsWith('/update') &&
-                !this.$route.path.startsWith('/compare') &&
-                !this.$route.path.startsWith('/selections')
-                  ? 'active'
-                  : '')
+              (!this.$route.path.startsWith('/update') &&
+              !this.$route.path.startsWith('/compare') &&
+              !this.$route.path.startsWith('/selections')
+                ? 'active'
+                : '')
             "
           >
             <router-link class="nav-link" to="/">Projects</router-link>
@@ -39,7 +40,7 @@
           <li
             :class="
               'nav-item ' +
-                (this.$route.path.startsWith('/selections') ? 'active' : '')
+              (this.$route.path.startsWith('/selections') ? 'active' : '')
             "
           >
             <router-link class="nav-link" to="/selections/user"
@@ -49,7 +50,7 @@
           <li
             :class="
               'nav-item ' +
-                (this.$route.path.startsWith('/update') ? 'active' : '')
+              (this.$route.path.startsWith('/update') ? 'active' : '')
             "
           >
             <router-link class="nav-link" to="/update"
@@ -59,7 +60,7 @@
           <li
             :class="
               'nav-item ' +
-                (this.$route.path.startsWith('/compare') ? 'active' : '')
+              (this.$route.path.startsWith('/compare') ? 'active' : '')
             "
           >
             <router-link class="nav-link" to="/compare"
@@ -89,57 +90,57 @@
 <script>
 export default {
   name: 'app',
-  data: function() {
+  data: function () {
     return {
       username: null,
-      loginInitiateUrl: `${process.env.VUE_APP_API_URL}/oauth/initiate`
+      loginInitiateUrl: `${import.meta.env.VITE_API_URL}/oauth/initiate`,
     };
   },
   methods: {
-    logout: async function() {
-      await fetch(`${process.env.VUE_APP_API_URL}/oauth/logout`, {
-        credentials: 'include'
+    logout: async function () {
+      await fetch(`${import.meta.env.VITE_API_URL}/oauth/logout`, {
+        credentials: 'include',
       });
       this.username = null;
       this.$root.$data.isLoggedIn = false;
       this.$router.push({ path: `/` });
     },
-    identify: async function() {
+    identify: async function () {
       if (this.username) {
         return;
       }
       const data = await fetch(
-        `${process.env.VUE_APP_API_URL}/oauth/identify`,
+        `${import.meta.env.VITE_API_URL}/oauth/identify`,
         {
-          credentials: 'include'
+          credentials: 'include',
         }
       )
-        .then(response => {
+        .then((response) => {
           if (response.ok) {
             return response.json();
           } else {
             throw new Error(response.status);
           }
         })
-        .catch(err => {
+        .catch((err) => {
           console.error(err);
         });
       if (data) {
         this.username = data.username;
         this.$root.$data.isLoggedIn = true;
       }
-    }
+    },
   },
   watch: {
-    $route: function() {
+    $route: function () {
       this.loginInitiateUrl =
-        `${process.env.VUE_APP_API_URL}/oauth/initiate?next=` +
+        `${import.meta.env.VITE_API_URL}/oauth/initiate?next=` +
         this.$route.path.toString().substr(1);
-    }
+    },
   },
-  created: function() {
+  created: function () {
     this.identify();
-  }
+  },
 };
 </script>
 

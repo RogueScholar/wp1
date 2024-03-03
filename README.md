@@ -8,6 +8,7 @@ English](https://en.wikipedia.org/wiki/Wikipedia:Version_1.0_Editorial_Team).
 [![build status](https://github.com/openzim/wp1/actions/workflows/workflow.yml/badge.svg)](https://github.com/openzim/wp1/actions?query=branch%3Amain)
 [![codecov](https://codecov.io/gh/openzim/wp1/branch/main/graph/badge.svg)](https://codecov.io/gh/openzim/wp1)
 [![CodeFactor](https://www.codefactor.io/repository/github/openzim/wp1/badge)](https://www.codefactor.io/repository/github/openzim/wp1)
+[![Doc](https://readthedocs.org/projects/wp1/badge/?style=flat)](https://wp1.readthedocs.io/en/latest/?badge=latest)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
 ## Contents
@@ -59,11 +60,7 @@ docker-compose -f docker-compose-test.yml up -d
 ```
 
 The `*.dockerfile` symlinks allow for each docker image in this repository
-to be more easily built on [Docker Hub](https://hub.docker.com/). See:
-
-- https://hub.docker.com/repository/docker/openzim/wp1bot-frontend
-- https://hub.docker.com/repository/docker/openzim/wp1bot-workers
-- https://hub.docker.com/repository/docker/openzim/wp1bot-web
+(there are many) to be more easily organized.
 
 `openapi.yml` is a YAML file that describes the API of the `web` image
 in [OpenAPI](https://swagger.io/specification/) format. If you visit
@@ -77,35 +74,32 @@ interfaces with. They are used for unit testing.
 
 ## Installation
 
-This code is targeted to and tested on Python 3.9.4.
+This code is targeted to and tested on Python 3.12.0.
 
-### Creating your virtualenv
+### Installing dependencies
 
-As of Python 3.3, creating a virtualenv is a single easy command. It is
-recommmended that you run this command in the top level directory:
-
-```bash
-python3 -m venv venv
-```
-
-### Activating your virtualenv
-
-To activate your virtualenv, run:
+WP1 uses [Pipenv](https://pipenv.pypa.io/en/latest/) to managed dependencies.
+A `Pipfile` and `Pipfile.lock` are provided. You should have the pipenv tool
+installed in your global Python install (not in a virtualenv):
 
 ```bash
-source venv/bin/activate
+pip3 install pipenv
 ```
 
-You should see your prompt change, with a `(venv)` appended to the front.
-
-### Installing requirements
-
-To install the requirements, make sure you are in your virtualenv as
-explained above, then use the following command:
+Then you can use:
 
 ```bash
-pip3 install -r requirements.txt
+pipenv install --dev
 ```
+
+Which will install the dependencies at the precise versions specified in the
+`Pipfile.lock` file. Behind the scenes, Pipenv creates a virtualenv for you
+automatically, which it keeps up to date when you run Pipenv commands. You
+can use the `pipenv shell` command to start a shell using the environment,
+which is similar to "activating" a virtualenv. You can also use `pipenv run`
+to run arbitrary individual shell commands within that environment. In many
+cases, it will be more convenient to use commands like `pipenv run pytest`
+then actually spawning a subshell.
 
 ### Installing frontend requirements
 
@@ -149,22 +143,39 @@ in `docker-compose-test.yml` you can copy these directly from the example
 file. However, you are free to provide your own test database that will
 be destroyed after every test run. See the section "Running the tests".
 
-### Running the tests
+### Running the backend (Python/pytest) tests
 
-The tests require a MariaDB or MySQL instance to connect to in order to
-verify various statements and logic. This database does not need to be
-persistent and in fact part of the test setup and teardown is to recreate
-a fresh schema for the test databases each time. You also will need two
-databases in your server: `enwp10_test` and `enwikip_test`. They can use
-default settings and be empty.
+The backend/python tests require a MariaDB or MySQL instance to connect to in
+order to verify various statements and logic. This database does not need to be
+persistent and in fact part of the test setup and teardown is to recreate a
+fresh schema for the test databases each time. You also will need two databases
+in your server: `enwp10_test` and `enwikip_test`. They can use default settings
+and be empty. **If you've followed the steps under 'Development' below to
+create a running dev database with docker-compose, you're all set.**
 
 If you have that, and you've already installed the requirements above,
 you should be able to simply run the following command from this
 directory to run the tests:
 
 ```bash
-nosetests
+pipenv run pytest
 ```
+
+### Running the frontend (Cypress) integration tests
+
+For frontend tests, you need to have a full working local development
+environment. You should follow the steps in 'Installation' above, as well as the
+steps in 'Development' below. Your frontend should be running on port 5173 (the
+default) and the backend should be on port 5000 (also the default).
+
+To run the tests:
+
+```bash
+cd wp1-frontend
+$(yarn bin)/cypress run
+```
+
+Then follow the GUI prompts to run "Electron E2E tests".
 
 # Development
 
@@ -192,20 +203,19 @@ See the instructions in the associated [README file](https://github.com/openzim/
 
 ## Starting the API server
 
-Assuming you are in your Python virtualenv (described above) you can start
-the API server with:
+Using pipenv, you can start the API server with:
 
 ```bash
-FLASK_DEBUG=1 FLASK_APP=wp1.web.app flask run
+pipenv run flask --app wp1.web.app --debug run
 ```
 
 ## Starting the web frontend
 
-The web frontend can be started with the following command in the `wp1-frontend`
-directory:
+Assuming you've installed the frontend deps (`yarn install`), the web frontend
+can be started with the following command in the `wp1-frontend` directory:
 
 ```bash
-yarn serve
+yarn dev
 ```
 
 ## Development credentials.py
@@ -246,6 +256,27 @@ to something like:
     # In development, override some project endpoints, mostly manual
     ...
 ```
+
+# Building/editing the docs
+
+Documentation lives at [Read the Docs](https://wp1.readthedocs.io/en/latest/). It is
+built using [mkdocs](https://www.mkdocs.org/). The Read the Docs site automatically
+monitors the WP1 github HEAD and re-builds the documentation on every push.
+
+## Local docs
+
+If you are editing the docs and would like to view them locally before pushing:
+
+```bash
+$ cd docs
+$ python -m venv venv
+$ source venv/bin/activate
+$ pip install -r requirements.txt
+$ cd ..
+$ mkdocs serve
+```
+
+The `serve` command should print out the port to view the docs at, likely localhost:8000.
 
 # Updating production
 
