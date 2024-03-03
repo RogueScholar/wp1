@@ -1,11 +1,17 @@
 import html
+import json
 import logging
 import urllib.parse
 
 import attr
 
-from wp1.constants import CONTENT_TYPE_TO_EXT
+from wp1.constants import CONTENT_TYPE_TO_EXT, TS_FORMAT_WP10, ZIM_FILE_TTL
+from wp1.models.wp10.selection import Selection
+from wp1.models.wp10.zim_file import ZimFile
 from wp1.storage import connect_storage
+from wp1.logic import util
+from wp1.timestamp import utcnow
+from wp1 import zimfarm
 
 try:
   from wp1.credentials import ENV, CREDENTIALS
@@ -23,10 +29,15 @@ def insert_selection(wp10db, selection):
   with wp10db.cursor() as cursor:
     cursor.execute(
         '''INSERT INTO selections
-      (s_id, s_builder_id, s_version, s_content_type, s_updated_at, s_object_key)
-      VALUES (%(s_id)s, %(s_builder_id)s, %(s_version)s, %(s_content_type)s,
-      %(s_updated_at)s, %(s_object_key)s)
+             (s_id, s_builder_id, s_version, s_content_type, s_updated_at,
+              s_object_key, s_status, s_error_messages)
+             VALUES
+             (%(s_id)s, %(s_builder_id)s, %(s_version)s, %(s_content_type)s,
+              %(s_updated_at)s, %(s_object_key)s, %(s_status)s, %(s_error_messages)s)
     ''', attr.asdict(selection))
+    cursor.execute(
+        'INSERT INTO zim_files (z_selection_id, z_status)'
+        ' VALUES (%s, "NOT_REQUESTED")', (selection.s_id,))
   wp10db.commit()
 
 
@@ -58,6 +69,18 @@ def url_for(object_key):
   return '%s/%s' % (S3_PUBLIC_URL, path)
 
 
+def zim_file_requested_at_for(wp10db, task_id):
+  with wp10db.cursor() as cursor:
+    cursor.execute(
+        'SELECT z_requested_at '
+        'FROM zim_files WHERE z_task_id = %s', task_id)
+    data = cursor.fetchone()
+    if data is None or data['z_requested_at'] is None:
+      return None
+
+  return util.wp10_timestamp_to_unix(data['z_requested_at'])
+
+
 def object_key_for(selection_id,
                    content_type,
                    model,
@@ -81,7 +104,7 @@ def object_key_for(selection_id,
       'model': model,
       'id': selection_id,
       'ext': ext,
-      'name': name,
+      'name': util.safe_name(name),
   }
 
 
@@ -125,3 +148,53 @@ def delete_keys_from_storage(keys):
   #                  (e['Key'], e['Code'], e['Message']))
 
   return fully_successful
+
+
+def set_error_messages(selection, e):
+  messages = [str(e)]
+  # Use __cause__ because we can use '... from e' expressions to either set or suppress the cause.
+  if e.__cause__:
+    messages.append(str(e.__cause__))
+  selection.s_error_messages = json.dumps({'error_messages': messages})
+
+
+def update_zimfarm_task(wp10db, task_id, status, set_updated_now=False):
+  with wp10db.cursor() as cursor:
+    if set_updated_now:
+      updated_at = utcnow().strftime(TS_FORMAT_WP10).encode('utf-8')
+      with wp10db.cursor() as cursor:
+        cursor.execute(
+            '''UPDATE zim_files SET z_status = %s, z_updated_at = %s
+               WHERE z_task_id = %s''', (status, updated_at, task_id))
+        found = bool(cursor.rowcount)
+    else:
+      cursor.execute('UPDATE zim_files SET z_status = %s WHERE z_task_id = %s',
+                     (status, task_id))
+      found = bool(cursor.rowcount)
+  wp10db.commit()
+  return found
+
+
+def is_zim_file_deleted(update_at_timestamp):
+  return utcnow().timestamp() - update_at_timestamp > ZIM_FILE_TTL
+
+
+TASK_CPU = 3
+TASK_MEMORY = 1024 * 1024 * 1024 * 3  # Base memory is 3 GB
+TASK_DISK = 1024 * 1024 * 1024 * 20  # Base disk space is 20 GB
+
+
+def get_resource_profile(s3, selection):
+  data = s3.client.head_object(Bucket=s3.bucket_name,
+                               Key=selection.s_object_key.decode('utf-8'))
+  length = data.get('ContentLength', 1024)
+  article_estimate = length / 15  # Assume each article name is 15 chars long.
+  multiplier = (
+      (article_estimate // 1000000) + 1)  # 1 multiplier for every 1M articles
+  return {
+      'cpu': TASK_CPU,
+      # 3 GB of memory for each 1M articles
+      'memory': int(TASK_MEMORY * multiplier),
+      # 20 GB of disk for each 1M articles
+      'disk': int(TASK_DISK * multiplier),
+  }

@@ -24,6 +24,11 @@ class Selection:
   s_updated_at = attr.ib(default=None)
   # The data that is stored in the backend s3-like storage. Not saved to the database.
   data = attr.ib(default=None)
+  s_status = attr.ib(default=None)
+  s_error_messages = attr.ib(default=None)
+
+  def set_id(self):
+    self.s_id = str(uuid.uuid4()).encode('utf-8')
 
   @property
   def updated_at_dt(self):
@@ -41,6 +46,3 @@ class Selection:
   def set_updated_at_now(self):
     """Sets the updated_at field to a timestamp that is equal to now"""
     self.set_updated_at_dt(utcnow())
-
-  def set_id(self):
-    self.s_id = str(uuid.uuid4()).encode()

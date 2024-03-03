@@ -59,12 +59,12 @@ def _project_rating_query(project_name,
 
   if project_b_name is None:
     if importance is None:
-      query += (
-          ' JOIN global_rankings gri ON gri.gr_type = "importance" AND'
-          ' (gri.gr_rating = r_importance OR r_importance = "NotA-Class")')
+      query += (' LEFT JOIN global_rankings gri ON gri.gr_rating = r_importance'
+                '   AND gri.gr_type = "importance"')
     if quality is None:
-      query += (' JOIN global_rankings grq ON grq.gr_type = "quality" AND'
-                ' grq.gr_rating = rating_a.r_quality')
+      query += (
+          ' LEFT JOIN global_rankings grq ON grq.gr_rating = rating_a.r_quality'
+          '   AND grq.gr_type = "quality" ')
 
   query += ' WHERE rating_a.r_project = %(r_project)s'
   if project_b_name is not None:
@@ -92,11 +92,11 @@ def _project_rating_query(project_name,
 
   if project_b_name is None:
     if quality is None and importance is None:
-      query += ' ORDER BY grq.gr_ranking DESC, gri.gr_ranking DESC'
+      query += ' ORDER BY grq.gr_ranking DESC, gri.gr_ranking DESC, rating_a.r_article'
     elif quality is None:
-      query += ' ORDER BY grq.gr_ranking DESC'
+      query += ' ORDER BY grq.gr_ranking DESC, rating_a.r_article'
     elif importance is None:
-      query += ' ORDER BY gri.gr_ranking DESC'
+      query += ' ORDER BY gri.gr_ranking DESC, rating_a.r_article'
 
   if page is not None:
     page = int(page) - 1
@@ -104,7 +104,7 @@ def _project_rating_query(project_name,
   else:
     query += ' LIMIT %s' % limit
 
-  print(query)
+  logger.debug(query)
   return query
 
 
