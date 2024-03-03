@@ -18,9 +18,7 @@
           <li
             :class="
               'nav-item ' +
-                (this.$route.path.startsWith('/selections/user')
-                  ? 'active'
-                  : '')
+              (this.$route.path.startsWith('/selections/user') ? 'active' : '')
             "
           >
             <router-link class="nav-link" to="/selections/user"
@@ -30,13 +28,47 @@
           <li
             :class="
               'nav-item ' +
-                (this.$route.path.startsWith('/selections/simple')
-                  ? 'active'
-                  : '')
+              (this.$route.path.startsWith('/selections/simple')
+                ? 'active'
+                : '')
             "
           >
             <router-link class="nav-link" to="/selections/simple"
               >Simple Selection</router-link
+            >
+          </li>
+          <li
+            :class="
+              'nav-item ' +
+              (this.$route.path.startsWith('/selections/sparql')
+                ? 'active'
+                : '')
+            "
+          >
+            <router-link class="nav-link" to="/selections/sparql"
+              >SPARQL Selection</router-link
+            >
+          </li>
+          <li
+            :class="
+              'nav-item ' +
+              (this.$route.path.startsWith('/selections/petscan')
+                ? 'active'
+                : '')
+            "
+          >
+            <router-link class="nav-link" to="/selections/petscan"
+              >Petscan Selection</router-link
+            >
+          </li>
+          <li
+            :class="
+              'nav-item ' +
+              (this.$route.path.startsWith('/selections/book') ? 'active' : '')
+            "
+          >
+            <router-link class="nav-link" to="/selections/book"
+              >Book Selection</router-link
             >
           </li>
         </ul>
@@ -47,7 +79,7 @@
 
 <script>
 export default {
-  name: 'SecondaryNav'
+  name: 'SecondaryNav',
 };
 </script>
 
