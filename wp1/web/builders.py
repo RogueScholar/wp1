@@ -314,9 +314,11 @@ def update_zimfarm_status():
             )
 
             zim_task = logic_zim_tasks.get_zim_task_by_task_id(wp10db, task_id)
-            zim_schedule = logic_zim_schedules.get_zim_schedule(
-                wp10db, zim_task.z_zim_schedule_id
-            ) if zim_task else None
+            zim_schedule = (
+                logic_zim_schedules.get_zim_schedule(wp10db, zim_task.z_zim_schedule_id)
+                if zim_task
+                else None
+            )
             if zim_schedule is None:
                 return "Error: ZIM not found for task_id %s" % task_id, 500
 
