@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="app">
     <div class="alert alert-info my-0" role="alert">
       Welcome to the latest version of WP 1.0! Documentation is on
       <a href="https://wp1.readthedocs.io/en/latest/">read the docs</a>. Please
@@ -9,6 +9,7 @@
         >English Wikipedia</a
       >.
     </div>
+    <div id="replag-embed" data-wiki="en.wikipedia.org"></div>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <a class="navbar-brand" href="/">Wikipedia 1.0 Server</a>
       <button
@@ -81,9 +82,18 @@
         </div>
       </div>
     </nav>
-    <div id="app">
+    <div class="main-content">
       <router-view></router-view>
     </div>
+    <footer class="footer bg-light border-top">
+      <div class="container-fluid py-3">
+        <div class="text-right">
+          <a href="https://kiwix.org/privacy-policy/" target="_blank" rel="noopener noreferrer">
+            Privacy Policy
+          </a>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -113,7 +123,7 @@ export default {
         `${import.meta.env.VITE_API_URL}/oauth/identify`,
         {
           credentials: 'include',
-        }
+        },
       )
         .then((response) => {
           if (response.ok) {
@@ -145,6 +155,37 @@ export default {
 </script>
 
 <style>
+
+html, body {
+  height: 100%;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding-bottom: 20px;
+}
+
+.footer {
+  margin-top: auto;
+  background-color: #f8f9fa !important;
+}
+
+.footer a {
+  color: #0063cc;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  color: #000;
+  text-decoration: underline;
+}
+
 a {
   color: #0063cc;
 }
