@@ -14,7 +14,7 @@ The dev database will need to be migrated in the following circumstances:
 To migrate, cd to the `db/dev` directory and run the following command:
 
 ```bash
-PYTHONPATH=$PYTHONPATH:../.. yoyo apply
+PYTHONPATH=$PYTHONPATH:../.. pipenv run yoyo apply
 ```
 
 The `PYTHONPATH` environment variable is necessary because some of the migrations
@@ -80,17 +80,19 @@ docker rm wp1bot-db-dev
 Then you can load a fresh copy with the docker compose command for development.
 
 ```bash
-docker-compose -f docker-compose-dev.yml up -d
+docker-compose -f docker-compose-dev.yml up -d --build
 ```
 
 Next, apply the migrations using the steps above.
 
-After that, cd into the directory where the database dump is store and create a new
-dump:
+After that, cd into this directory and  create a new dump:
 
 ```bash
 cd docker/dev-db
-mysqldump --column-statistics=0 -h 127.0.0.1 -P 6300 --user=root -pwikipedia --lock-tables --single-transaction --quick enwp10_dev > enwp10_dev.dump.sql
+```
+
+```bash
+mysqldump -h 127.0.0.1 -P 6300 --skip-ssl --user=root -pwikipedia --lock-tables --single-transaction --quick enwp10_dev > enwp10_dev.dump.sql
 ```
 
 Finally, we must add CREATE and USE database commands to the top of the dump so that our
