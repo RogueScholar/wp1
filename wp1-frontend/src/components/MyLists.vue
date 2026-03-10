@@ -22,7 +22,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in list" :key="item.s_id">
+            <tr v-for="item in list" :key="item.id">
               <td>{{ item.name }}</td>
               <td :data-order="item.created_at">
                 {{ localDate(item.created_at) }}
@@ -75,8 +75,15 @@
                 {{ localDate(item.z_updated_at) }}
               </td>
               <td v-else>-</td>
+              <td v-if="hasActiveSchedule(item)">
+                <router-link :to="zimPathFor(item)">
+                  <button type="button" class="btn btn-primary">
+                    Manage Schedule
+                  </button>
+                </router-link>
+              </td>
               <td
-                v-if="item.z_url && !hasDeletedZim(item)"
+                v-else-if="item.z_url && !hasDeletedZim(item)"
                 :class="{ 'outdated-zim': hasOutdatedZim(item) }"
               >
                 <a :href="item.z_url">Download ZIM</a>
@@ -144,6 +151,7 @@ import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
 
 import SecondaryNav from './SecondaryNav.vue';
 import LoginRequired from './LoginRequired.vue';
+import { localDate } from '../lib/util.js';
 
 export default {
   components: { SecondaryNav, LoginRequired, PulseLoader },
@@ -183,12 +191,10 @@ export default {
       // ZIMs older than 2 weeks get deleted.
       return !!item.z_is_deleted;
     },
-    localDate: function (secs) {
-      const fmt = new Intl.DateTimeFormat('en-US', {
-        dateStyle: 'short',
-        timeStyle: 'short',
-      });
-      return fmt.format(new Date(secs * 1000));
+    hasActiveSchedule: function (item) {
+      return (
+        item.active_schedule !== null && item.active_schedule !== undefined
+      );
     },
     getLists: async function () {
       let createDataTable = false;
@@ -259,6 +265,9 @@ export default {
     },
     stopProgressPolling: function () {
       clearInterval(this.pollId);
+    },
+    localDate: function (date) {
+      return localDate(date);
     },
   },
   created: function () {

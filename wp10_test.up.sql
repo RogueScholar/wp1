@@ -10,18 +10,6 @@ CREATE TABLE `ratings` (
   PRIMARY KEY (`r_project`,`r_namespace`,`r_article`)
 );
 
-CREATE TABLE `logging` (
-  `l_project` varbinary(63) NOT NULL,
-  `l_namespace` int(10) unsigned NOT NULL,
-  `l_article` varbinary(255) NOT NULL,
-  `l_action` varbinary(20) NOT NULL,
-  `l_timestamp` binary(14) NOT NULL,
-  `l_old` varbinary(63) DEFAULT NULL,
-  `l_new` varbinary(63) DEFAULT NULL,
-  `l_revision_timestamp` binary(20) NOT NULL,
-  PRIMARY KEY (`l_project`,`l_namespace`,`l_article`,`l_action`,`l_timestamp`)
-);
-
 CREATE TABLE `categories` (
   `c_project` varbinary(63) NOT NULL,
   `c_type` varbinary(16) NOT NULL,
@@ -88,14 +76,15 @@ CREATE TABLE `global_rankings` (
 );
 
 CREATE TABLE `users` (
-  `u_id` int(8) unsigned NOT NULL,
-  `u_username` varchar(255) DEFAULT NULL
+  `u_id` VARCHAR(255) NOT NULL PRIMARY KEY,
+  `u_username` varchar(255) DEFAULT NULL,
+  `u_email` varchar(255) DEFAULT NULL
 );
 
 CREATE TABLE `builders` (
   b_id VARBINARY(255) NOT NULL PRIMARY KEY,
   b_name VARBINARY(255) NOT NULL,
-  b_user_id INTEGER NOT NULL,
+  b_user_id VARCHAR(255) NOT NULL,
   b_project VARBINARY(255) NOT NULL,
   b_model VARBINARY(255) NOT NULL,
   b_current_version int(11) NOT NULL DEFAULT 0,
@@ -113,7 +102,8 @@ CREATE TABLE `selections` (
   s_version int(11) NOT NULL,
   s_object_key VARBINARY(255),
   s_status VARBINARY(255) DEFAULT 'OK',
-  s_error_messages BLOB
+  s_error_messages BLOB,
+  s_article_count int(11)
 );
 
 CREATE TABLE custom (
@@ -127,15 +117,50 @@ CREATE TABLE custom (
   c_is_active TINYINT
 );
 
-CREATE TABLE zim_files (
+CREATE TABLE zim_tasks (
   z_id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
   z_selection_id VARBINARY(255) NOT NULL,
+  z_zim_schedule_id VARBINARY(36) NULL,
   z_status VARBINARY(255) DEFAULT "NOT_REQUESTED",
   z_task_id VARBINARY(255),
   z_requested_at BINARY(14),
-  z_updated_at BINARY(14),
-  z_long_description blob,
-  z_description tinyblob
+  z_updated_at BINARY(14)
+);
+
+CREATE TABLE zim_schedules (
+  s_id VARBINARY(36) NOT NULL PRIMARY KEY,
+  s_builder_id VARBINARY(255) NOT NULL,
+  s_rq_job_id VARBINARY(36) NULL,
+  s_interval INTEGER NULL,
+  s_remaining_generations INTEGER NULL,
+  s_email VARBINARY(255) NULL,
+  s_last_updated_at BINARY(14) NOT NULL,
+  s_long_description mediumblob,
+  s_description blob,
+  s_title blob,
+  s_email_confirmation_token VARBINARY(255) NULL
+);
+
+CREATE TABLE `temp_pageviews` (
+  `tp_lang` varbinary(255) NOT NULL,
+  `tp_page_id` int(11) NOT NULL,
+  `tp_article` varbinary(1024) DEFAULT NULL,
+  `tp_views` int(11) DEFAULT 0,
+  PRIMARY KEY (`tp_lang`,`tp_page_id`),
+  KEY `idx_tp_article` (tp_article)
+);
+
+CREATE TABLE `page_scores` (
+  `ps_lang` varbinary(255) NOT NULL,
+  `ps_page_id` int(11) NOT NULL,
+  `ps_article` varbinary(1024) DEFAULT NULL,
+  `ps_views` int(11) DEFAULT 0,
+  `ps_links` int(11) DEFAULT 0,
+  `ps_lang_links` int(11) DEFAULT 0,
+  `ps_score` int(11) DEFAULT 0,
+  PRIMARY KEY (`ps_lang`,`ps_page_id`),
+  KEY `lang_article` (`ps_lang`,`ps_article`),
+  KEY `idx_ps_article` (ps_article)
 );
 
 INSERT INTO `global_rankings` (gr_type, gr_rating, gr_ranking) VALUES ('importance', 'Unknown-Class', 0);

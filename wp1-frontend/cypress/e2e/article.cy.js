@@ -88,5 +88,38 @@ describe('the article page', () => {
           cy.wrap($el).should('contain.text', 'B');
         });
     });
+
+    it('opens a random article with selected quality and importance', () => {
+      cy.visit('/#/project/Alien/articles');
+
+      cy.intercept(
+        'GET',
+        'v1/projects/Alien/articles/random?quality=B-Class&importance=Top-Class',
+        {
+          statusCode: 200,
+          body: JSON.stringify(
+            'https://en.wikipedia.org/w/index.php?title=Predator%20%28film%29'
+          ),
+        }
+      ).as('RandomTopBArticle');
+
+      cy.window().then((win) => {
+        cy.stub(win, 'open').as('windowOpen');
+      });
+
+      cy.contains('Select Quality/Importance').click();
+
+      cy.get('.custom-select').eq(0).select('B');
+
+      cy.get('.custom-select').eq(1).select('Top');
+
+      cy.get('#randomArticle').click();
+
+      cy.wait('@RandomTopBArticle').then((interception) => {
+        const randomArticleLink = JSON.parse(interception.response.body);
+
+        cy.get('@windowOpen').should('be.calledWith', randomArticleLink);
+      });
+    });
   });
 });
