@@ -46,17 +46,13 @@ library code.
 graph of required docker images that represent the production environment.
 
 `docker-compose-dev.yml` is a similar file which sets up a dev environment,
-with Redis and a MariaDB server for the `enwp10` database. Use it like so
-
-```bash
-docker-compose -f docker-compose-dev.yml up -d
-```
+with Redis and a MariaDB server for the `enwp10` database. Through profiles like `zimfarm` and `zimfarm-worker`, you can start the Zimfarm containers required to execute a task.
 
 `docker-compose-test.yml` is a another docker file which sets up the test db
 for python "nosetests" (unit tests). Run it similarly:
 
 ```bash
-docker-compose -f docker-compose-test.yml up -d
+docker compose -f docker-compose-test.yml up -d
 ```
 
 The `*.dockerfile` symlinks allow for each docker image in this repository
@@ -102,13 +98,26 @@ to run arbitrary individual shell commands within that environment. In many
 cases, it will be more convenient to use commands like `pipenv run pytest`
 then actually spawning a subshell.
 
-### Installing frontend requirements
+### Installing frontend requirements (optional)
 
-To install the requirements for the frontend server, cd into `wp1-frontend`
-and use:
+**Note:** If you are using the docker-compose development environment, you do not
+need to install Node.js or frontend dependencies locally. The frontend runs inside
+a Docker container with hot-reload support. See the "Starting the web frontend"
+section below.
+
+If you prefer to run the frontend locally without Docker, it requires
+[Node.js](https://nodejs.org/) version 18 to build and run. Once node is
+installed, to install the requirements for the frontend server, cd into
+`wp1-frontend` and use:
 
 ```bash
 yarn install
+```
+
+If you do not have yarn, it can be installed with:
+
+```bash
+npm i -g yarn
 ```
 
 ### Docker
@@ -192,11 +201,62 @@ Before you run the docker-compose command below, you must copy the file
 section for `STORAGE`, if you wish to properly materialize builder lists into
 backend selections.
 
-After that is done, use the following command to run the dev environment:
+### Setting up the development services
 
-```bash
-docker-compose -f docker-compose-dev.yml up -d
-```
+The dev stack has various containers which can be activated via various profiles. The `zimfarm` profile sets up a local zimfarm DB, API and UI.
+The `zimfarm-worker` profile sets up a local zimfarm worker manager and receiver that stores the results/files of tasks.
+
+If it is your first execution of the dev stack, you need to create offliners and a "virtual" worker in Zimfarm DB. Thus, you need to start the services without the worker profile until you register a worker.
+
+You may need to install the `jq` tool with [these instructions](https://github.com/jqlang/jq/wiki/Installation).
+
+#### Registering a worker
+
+- Start the dev stack without a Zimfarm worker for now
+
+  ```sh
+  docker compose -f docker-compose-dev.yml --profile zimfarm up --pull always --build
+  ```
+
+  This starts the API, creates an admin user with username: `admin` and password `admin`
+
+- Register offliners in the database
+
+  ```sh
+  cd docker/zimfarm
+  ./create_offliners.sh
+  ```
+
+  This pulls the various versions of the mwoffliner definition schema from the Zimfarm API
+  and registers the definition within your docker Zimfarm API. These definitions are
+  necessary as they contain the latest parameters needed to run the `mwoffliner`
+  scraper.
+
+  In your `credentials.py`, set the defintion version to any of the versions pulled from the API. For example, if `1.17.2` was one of the downloaded definitions of the mwoffliner scraper, you want to set `definition_version` under the `ZIMFARM` section:
+
+  ```py
+    "ZIMFARM": {
+        "definition_version": "1.17.2",
+        "image": "ghcr.io/openzim/mwoffliner:1.17.2"
+        # other configurations for zimfarm follow...
+    }
+
+  ```
+
+- Register a test Zimfarm worker
+
+  ```sh
+  cd docker/zimfarm
+  ./create_worker.sh
+  ```
+
+  This registers a worker with username `test_worker` and generates SSH keys for it to authenticate with the Zimfarm API. The worker is configured with 3 CPU, 20GB RAM and 20GB disk.
+
+- Restart the dev stack with a Zimfarm worker now
+  ```sh
+  docker compose -f docker-compose-dev.yml --profile zimfarm --profile zimfarm-worker \
+  up -d
+  ```
 
 ## Migrating and updating the dev database.
 
@@ -204,18 +264,43 @@ See the instructions in the associated [README file](https://github.com/openzim/
 
 ## Starting the API server
 
-Using pipenv, you can start the API server with:
+The API server is included in the docker-compose-dev.yml graph and starts
+automatically. It will be available at http://localhost:5000.
+
+If you prefer to run the API server locally instead of in Docker, you can use:
 
 ```bash
 pipenv run flask --app wp1.web.app --debug run
 ```
 
+If you're having difficulties connecting to the backend server from the
+frontend, especially in cypress e2e tests, and espcially on macOS, it might have
+something to do with IPv4 versus IPv6 networking stacks. You can try adding the
+option `--host 127.0.0.1` to the command line above (see
+https://github.com/openzim/wp1/pull/859).
+
 ## Starting the web frontend
 
-Assuming you've installed the frontend deps (`yarn install`), the web frontend
-can be started with the following command in the `wp1-frontend` directory:
+The frontend is included in the docker-compose-dev.yml graph and starts
+automatically with hot-reload support. It will be available at http://localhost:5173.
+
+To start all development services including the frontend:
 
 ```bash
+docker compose -f docker-compose-dev.yml up --build
+```
+
+Changes made to files in `wp1-frontend/src/` will be automatically reflected
+in the browser without needing to restart the container.
+
+### Running the frontend locally (alternative)
+
+If you prefer to run the frontend locally instead of in Docker, you will need
+Node.js installed. Then install the dependencies and start the dev server:
+
+```bash
+cd wp1-frontend
+yarn install
 yarn dev
 ```
 
@@ -296,17 +381,18 @@ The `serve` command should print out the port to view the docs at, likely localh
   - `sudo docker pull ghcr.io/openzim/wp1-workers:release`
   - `sudo docker pull ghcr.io/openzim/wp1-web:release`
   - `sudo docker pull ghcr.io/openzim/wp1-frontend:release`
+- If you've made changes to the format or contents of `credentials.py`, update `/data/wp1bot/credentials.py`.
 - Run docker-compose to bring the production images online.
-  - `sudo docker-compose up -d`
+  - `sudo docker compose up -d`
 - Run the production database migrations in the worker container:
-  - `sudo docker exec -ti -e PYTHONPATH=app wp1bot-workers yoyo -c /usr/src/app/db/production/yoyo.ini apply`
+  - `sudo docker exec -ti -e PYTHONPATH=. wp1bot-workers yoyo -c /usr/src/app/db/production/yoyo.ini apply`
 
 # Pre-commit hooks
 
 This project is configured to use git pre-commit hooks managed by the
 Python program `pre-commit` ([website](https://pre-commit.com/)). Pre-
 commit checks let us ensure that the code is properly formatted with
-[yapf](https://github.com/google/yapf) amongst other things.
+[Black](https://github.com/psf/black) amongst other things.
 
 If you've installed the requirements for this repository, the pre-commit
 binary should be available to you. To install the hooks, use:
@@ -321,8 +407,8 @@ Then, when you try to commit a change that would fail pre-commit, you get:
 (venv) host:wikimedia_wp1_bot audiodude$ git commit -am 'Test commit'
 Trim Trailing Whitespace.................................................Passed
 Fix End of Files.........................................................Passed
-yapf.....................................................................Failed
-hookid: yapf
+black....................................................................Failed
+hookid: black
 ```
 
 From there, the pre-commit hook will have modified and thus unstaged some or all

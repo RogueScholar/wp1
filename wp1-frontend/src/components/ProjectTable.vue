@@ -124,12 +124,17 @@
         </td>
       </tr>
     </table>
+    <div v-if="tableData" class="timestamp">
+      Last updated: {{ localDate(tableData.timestamp) }}
+    </div>
   </div>
 </template>
 
 <script>
 import WikiLink from './WikiLink.vue';
 import PulseLoader from 'vue-spinner/src/PulseLoader.vue';
+
+import { localDate } from '../lib/util.js';
 
 export default {
   name: 'project-table',
@@ -165,7 +170,7 @@ export default {
 
       this.loading = true;
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/projects/${projectId}/table`
+        `${import.meta.env.VITE_API_URL}/projects/${projectId}/table`,
       );
       const json = await response.json();
       this.loading = false;
@@ -179,6 +184,9 @@ export default {
         return cls.text;
       }
       return cls;
+    },
+    localDate: function (secs) {
+      return localDate(secs);
     },
   },
 };
@@ -223,5 +231,12 @@ td {
 
 .quality {
   vertical-align: bottom;
+}
+
+.timestamp {
+  text-align: center;
+  margin: 1rem 0;
+  color: #666;
+  font-size: 0.9rem;
 }
 </style>
