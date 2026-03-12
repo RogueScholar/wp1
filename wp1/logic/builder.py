@@ -10,7 +10,6 @@ from redis import Redis
 
 import wp1.logic.selection as logic_selection
 import wp1.logic.util as logic_util
-import wp1.logic.zim_files as logic_zim_tasks
 import wp1.logic.zim_schedules as logic_zim_schedules
 from wp1 import app_logging, queues, zimfarm
 from wp1.constants import (
@@ -19,7 +18,6 @@ from wp1.constants import (
     TS_FORMAT_WP10,
 )
 from wp1.credentials import CREDENTIALS, ENV
-from wp1.environment import Environment
 from wp1.exceptions import ObjectNotFoundError, UserNotAuthorizedError, ZimFarmError
 from wp1.models.wp10.builder import Builder
 from wp1.models.wp10.selection import Selection
@@ -93,9 +91,9 @@ def update_current_version(wp10db, builder, version):
     with wp10db.cursor() as cursor:
         cursor.execute(
             """UPDATE builders
-           SET b_current_version=%(version)s
-           WHERE b_id = %(b_id)s AND b_user_id = %(b_user_id)s
-        """,
+               SET b_current_version=%(version)s
+               WHERE b_id = %(b_id)s AND b_user_id = %(b_user_id)s
+            """,
             {"version": version, "b_id": builder.b_id, "b_user_id": builder.b_user_id},
         )
         rowcount = cursor.rowcount
@@ -107,10 +105,12 @@ def update_builder(wp10db, builder):
     with wp10db.cursor() as cursor:
         cursor.execute(
             """UPDATE builders
-          SET b_name = %(b_name)s, b_project = %(b_project)s, b_params = %(b_params)s,
-              b_model = %(b_model)s, b_updated_at = %(b_updated_at)s
-          WHERE b_id = %(b_id)s AND b_user_id = %(b_user_id)s
-        """,
+
+            SET b_name = %(b_name)s, b_project = %(b_project)s,
+                b_params = %(b_params)s, b_model = %(b_model)s,
+                b_updated_at = %(b_updated_at)s
+            WHERE b_id = %(b_id)s AND b_user_id = %(b_user_id)s
+            """,
             attr.asdict(builder),
         )
         rowcount = cursor.rowcount
@@ -227,9 +227,10 @@ def materialize_builder(
     redis: Redis = None,
     wp10db: Connection = None,
 ):
-    """
-    Materializes a builder selection using the given builder class and content type.
-    This is intended to be used by worker processes.
+    """Materialize a builder selection.
+
+    Uses the given builder class and content type. This is intended to be used
+    by worker processes.
     """
     should_close = False
     if wp10db is None:
@@ -293,22 +294,24 @@ def auto_handle_zim_generation(redis, wp10db, builder_id):
             logging.exception("Could not cancel task_id=%s", task_id)
 
     zim_file = latest_zim_file_for(wp10db, builder_id)
-    zim_schedule: ZimSchedule = logic_zim_schedules.get_zim_schedule_by_zim_file_id(
-        wp10db, zim_file.z_id
+    zim_schedule: ZimSchedule = (
+        logic_zim_schedules.get_zim_schedule_by_zim_file_id(wp10db, zim_file.z_id)
+        if zim_file
+        else None
     )
     title = (
         zim_schedule.s_title.decode("utf-8")
-        if zim_schedule.s_title is not None
+        if zim_schedule and zim_schedule.s_title is not None
         else None
     )
     description = (
         zim_schedule.s_description.decode("utf-8")
-        if zim_schedule.s_description is not None
+        if zim_schedule and zim_schedule.s_description is not None
         else None
     )
     long_description = (
         zim_schedule.s_long_description.decode("utf-8")
-        if zim_schedule.s_long_description is not None
+        if zim_schedule and zim_schedule.s_long_description is not None
         else None
     )
     handle_zim_generation(
@@ -364,7 +367,7 @@ def latest_url_for(builder_id, content_type):
     ext = CONTENT_TYPE_TO_EXT.get(content_type)
     if ext is None:
         logger.warning(
-            "Attempt to get latest selection URL with unrecognized content type: %r",
+            "Attempt to get latest selection URL w/ unknown content type: %r",
             content_type,
         )
         return None
@@ -385,14 +388,15 @@ def latest_zimfarm_url_for(builder_id, content_type):
     ext = CONTENT_TYPE_TO_EXT.get(content_type)
     if ext is None:
         logger.warning(
-            "Attempt to get latest selection URL with unrecognized content type: %r",
+            "Attempt to get latest selection URL w/ unknown content type: %r",
             content_type,
         )
         return None
     server_url = CREDENTIALS.get(ENV, {}).get("CLIENT_URL", {}).get("backend")
     if server_url is None:
         logger.warning(
-            "Could not determine server backend URL for Zimfarm. Check credentials.py"
+            "Could not determine server backend URL for Zimfarm. "
+            "Check credentials.py"
         )
         return None
     return "%s/v1/builders/%s/selection/zimfarm/latest.%s" % (
@@ -429,7 +433,7 @@ def latest_selection_for(wp10db, builder_id, content_type):
         db_selection = cursor.fetchone()
     if db_selection is None:
         logger.warning(
-            "Could not find latest selection for builder id=%s, content_type=%s",
+            "Couldn't find latest selection of builder id=%s, content_type=%s",
             builder_id,
             content_type,
         )
@@ -439,11 +443,11 @@ def latest_selection_for(wp10db, builder_id, content_type):
 
 
 def latest_selection_url(wp10db, builder_id, ext, zimfarm_s3=False):
-    """Returns the raw S3-like storage URL for the latest selection for the given builder.
+    """Returns the raw S3-like storage URL for the latest selection.
 
-    This is in contrast with latest_url_for, which returns the redirect URL on this API
-    server for a selection. This function is used when resolving the redirect, to return
-    the actual URL.
+    This is for the given builder in contrast with latest_url_for, which
+    returns the redirect URL on this API server for a selection. This function
+    is used when resolving the redirect, to return the actual URL.
     """
     content_type = EXT_TO_CONTENT_TYPE.get(ext)
     if content_type is None:
@@ -572,9 +576,10 @@ def request_zim_file_task_for_builder(
         # First, try to update the zim_task for the current selection
         cursor.execute(
             """UPDATE zim_tasks SET
-      z_status = 'REQUESTED', z_task_id = %s, z_zim_schedule_id = %s, z_requested_at = %s
-      WHERE z_selection_id = %s
-      """,
+            z_status = 'REQUESTED', z_task_id = %s, z_zim_schedule_id = %s,
+                       z_requested_at = %s
+            WHERE z_selection_id = %s
+            """,
             (
                 task_id,
                 zim_schedule_id,
@@ -584,14 +589,16 @@ def request_zim_file_task_for_builder(
         )
         rows_updated = cursor.rowcount
 
-        # If no rows were updated this means the selection version might have changed
-        # try to update by zim_schedule_id instead (for regenerating failed ZIMs)
+        # If no rows were updated this means the selection version might have
+        # changed try to update by zim_schedule_id instead (for regenerating
+        # failed ZIMs).
         if rows_updated == 0 and zim_schedule_id:
             cursor.execute(
                 """UPDATE zim_tasks SET
-          z_status = 'REQUESTED', z_task_id = %s, z_selection_id = %s, z_requested_at = %s
-          WHERE z_zim_schedule_id = %s
-          """,
+                z_status = 'REQUESTED', z_task_id = %s, z_selection_id = %s,
+                           z_requested_at = %s
+                WHERE z_zim_schedule_id = %s
+                """,
                 (
                     task_id,
                     selection.s_id,
@@ -604,9 +611,10 @@ def request_zim_file_task_for_builder(
         # If still no rows were updated then we need to insert a new zim_task
         if rows_updated == 0:
             cursor.execute(
-                """INSERT INTO zim_tasks (z_selection_id, z_zim_schedule_id, z_status, z_task_id, z_requested_at)
-          VALUES (%s, %s, 'REQUESTED', %s, %s)
-          """,
+                """INSERT INTO zim_tasks (z_selection_id, z_zim_schedule_id,
+                               z_status, z_task_id, z_requested_at)
+                VALUES (%s, %s, 'REQUESTED', %s, %s)
+                """,
                 (
                     selection.s_id,
                     zim_schedule_id,
@@ -615,10 +623,12 @@ def request_zim_file_task_for_builder(
                 ),
             )
 
-        # Update b_selection_zim_version to point to the current selection version
-        # ensures the download URL lookup finds the correct zim_task with the new task_id
+        # Update b_selection_zim_version to point to the current selection
+        # version ensures the download URL lookup finds the correct zim_task
+        # with the new task_id.
         cursor.execute(
-            """UPDATE builders SET b_selection_zim_version = %s WHERE b_id = %s""",
+            """UPDATE builders SET b_selection_zim_version = %s WHERE b_id = %s
+            """,
             (selection.s_version, builder.b_id),
         )
 
@@ -632,13 +642,13 @@ def request_zim_file_task_for_builder(
 
 
 def request_scheduled_zim_file_for_builder(builder: Builder, zim_schedule_id: bytes):
-    """
-    Requests a scheduled ZIM file generation from the Zimfarm for the given builder.
-    It will reopen connections and rebuild the selection for the builder.
-    This is used for scheduled ZIM file generations.
+    """Request a scheduled ZIM file generation from the Zimfarm.
+
+    This is for the given builder. It will reopen connections and rebuild the
+    selection for the builder. This is used for scheduled ZIM file generations.
     """
 
-    # Reconnect to the databases and storage (this is needed for scheduled tasks)
+    # Reconnect to the databases and storage (needed for scheduled tasks).
     wp10db = wp10_connect()
     redis = redis_connect()
     s3 = connect_storage()
