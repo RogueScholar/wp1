@@ -1,4 +1,5 @@
 # Run Python unit tests in continuous integration mode.
+---
 name: Continuous Integration
 
 on:
@@ -9,130 +10,137 @@ on:
 
 jobs:
   black-format-check:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: Set up Python 3.12.0
-        uses: actions/setup-python@v5
+      - name: Set up Python v3.12
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.12.0'
+          python-version: '3.12'
+          check-latest: true
 
       - name: Install Black
-        run: |
+        run: |2
           pip install --upgrade pip
-          pip install black~=25.12
+          pip install "black~=26.3"
 
       - name: Check formatting with Black
-        run: |
-          black --check --diff .
+        run: black --check --diff .
 
   python-tests:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     services:
       # Unit test rely on a local MySQL instance with an empty root password.
       mysql:
-        image: mariadb:10.4
+        image: mariadb:lts-noble
         env:
           MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: yes
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
+        options: >2
+          --health-cmd="mysqladmin ping" --health-interval=10s
+          --health-timeout=5s --health-retries=5
 
       redis:
         # Some unit tests also try to write to Redis
-        image: redis
+        image: redis:8.2-bookworm
         ports:
           - 9777:6379
-        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+        options: >2
+          --health-cmd "redis-cli ping" --health-interval 10s
+          --health-timeout 5s --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
-        # Don't need lfs because we're not referencing the dev-db in this workflow.
+      - uses: actions/checkout@v6
+        # Don't need LFS as we're not referencing the dev-db in this workflow.
 
-      - name: Set up Python 3.12.0
-        uses: actions/setup-python@v5
+      - name: Set up Python v3.12
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.12.0'
+          python-version: '3.12'
+          cache: 'pipenv'
+          check-latest: true
 
       - name: Install dependencies
-        run: |
+        run: |2
           pip install --upgrade pip
           pip install pipenv
           pipenv install --system --deploy --ignore-pipfile --dev
 
       - name: Verify MySQL connection from host
-        run: |
+        run: |2
           mysql --host 127.0.0.1 --port 3306 -uroot -e "SHOW DATABASES"
 
       - name: Create test databases
-        run: |
-          mysql --host 127.0.0.1 --port 3306 -uroot -e 'CREATE DATABASE enwp10_test; CREATE DATABASE enwikip_test;'
+        run: >2
+          mysql --host 127.0.0.1 --port 3306 -uroot
+          -e 'CREATE DATABASE enwp10_test; CREATE DATABASE enwikip_test;'
 
       - name: Copy credentials
-        run: |
+        run: |2
           cp wp1/credentials.py.e2e wp1/credentials.py
           cp wp1/credentials.py.dev.e2e wp1/credentials.py.dev
 
       - name: Test with pytest, with coverage
-        run: |
-          pipenv run pytest --cov=wp1
+        run: pipenv run pytest --cov=wp1
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           fail_ci_if_error: false
+          verbose: true
 
   frontend-cypress:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           lfs: true
 
-      - name: Set up Python 3.12.0
-        uses: actions/setup-python@v5
+      - name: Set up Python v3.12
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.12.0'
+          python-version: '3.12'
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         name: Cache pip dependencies
         id: pip-cache
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          restore-keys: ${{ runner.os }}-pip-
 
       - name: Install Python dependencies
-        run: |
+        run: |2
           pip install --upgrade pip
           pip install pipenv
           pipenv install --system --deploy --dev
 
       - name: Get yarn cache directory path
         id: yarn-dep-cache-dir-path
-        run: cd wp1-frontend && echo "YARN_CACHE_DIR=$(yarn cache dir)" >> $GITHUB_OUTPUT
+        run: |2
+          cd ./wp1-frontend
+          echo "YARN_CACHE_DIR=$(yarn cache dir)" >>$GITHUB_OUTPUT
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         name: Setup Yarn dep cache
         id: yarn-dep-cache
         with:
           path: ${{ steps.yarn-dep-cache-dir-path.outputs.YARN_CACHE_DIR }}
           key: ${{ runner.os }}-yarn-dep-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-dep-
+          restore-keys: ${{ runner.os }}-yarn-dep-
 
-      - name: Install Javascript dependencies
-        run: cd wp1-frontend && yarn install --frozen-lockfile
+      - name: Install JavaScript dependencies
+        run: cd ./wp1-frontend && yarn install --immutable
 
       - name: Copy credentials
-        run: |
+        run: |2
           cp wp1/credentials.py.e2e wp1/credentials.py
           cp wp1/credentials.py.dev.e2e wp1/credentials.py.dev
 
@@ -146,13 +154,11 @@ jobs:
         shell: bash
 
       - name: Build frontend server
-        run: |
-          cd wp1-frontend
-          yarn build --mode staging
+        run: cd ./wp1-frontend && yarn build --mode staging
 
       - name: Start frontend server
-        run: |
-          cd wp1-frontend
+        run: |2
+          cd ./wp1-frontend
           pipenv run python -m http.server 5173 --directory dist/ &
 
       - name: Wait for API and frontend server to be up (10s)
@@ -160,16 +166,14 @@ jobs:
         shell: bash
 
       - name: Run frontend tests
-        run: |
-          cd wp1-frontend
-          $(yarn bin)/cypress run
+        run: cd ./wp1-frontend && "$(yarn bin)/cypress" run
 
       - name: Stop containers
         continue-on-error: true
         if: always()
         run: docker compose -f "docker-compose-dev.yml" down
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         continue-on-error: true
         if: always()
         with:
@@ -177,3 +181,4 @@ jobs:
           path: |
             wp1-frontend/cypress/screenshots/*
             output.log
+...
