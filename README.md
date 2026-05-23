@@ -29,7 +29,7 @@ The `cron` directory contains wrapper scripts for cron jobs that are
 run [inside the workers image](https://github.com/openzim/wp1/blob/master/docker/workers/Dockerfile#L15).
 
 The `setup` directory contains a historical record of the database
-schema used by the tool for what is refered to in code as the `wp10`
+schema used by the tool for what is referred to in code as the `wp10`
 database. This file has been heavily edited, but should be able to be
 used to re-create the `enwp10` database if necessary.
 
@@ -71,7 +71,7 @@ interfaces with. They are used for unit testing.
 ## Installation
 
 This code is targeted to and tested on Python 3.12.0. For now, all development
-has been on Linux, use other platforms at your own risk.
+has been on Linux, Other platforms may not be fully supported.
 
 ### Installing dependencies
 
@@ -127,7 +127,7 @@ in order to run the development server.
 
 ### Populating the credentials module
 
-The script needs access to the enwiki_p replica database (referred to
+The script requires access to the enwiki_p replica database (referred to
 in the code as `wikidb`), as well as its own toolsdb application database
 (referred to in the code as `wp10db`). If you are a part of the toolforge
 `enwp10` [project](https://tools.wmflabs.org/admin/tool/enwp10), you can
@@ -168,8 +168,11 @@ you should be able to simply run the following command from this
 directory to run the tests:
 
 ```bash
-pipenv run pytest
+pipenv run WP1_ENV=test pytest
 ```
+
+**Note:** Inline env var support in `pipenv run` requires Pipenv >= 2026.5.2.
+Make sure your Pipenv is up to date.
 
 ### Running the frontend (Cypress) integration tests
 
@@ -232,7 +235,7 @@ You may need to install the `jq` tool with [these instructions](https://github.c
   necessary as they contain the latest parameters needed to run the `mwoffliner`
   scraper.
 
-  In your `credentials.py`, set the defintion version to any of the versions pulled from the API. For example, if `1.17.2` was one of the downloaded definitions of the mwoffliner scraper, you want to set `definition_version` under the `ZIMFARM` section:
+  In your `credentials.py`, set the definition version to any of the versions pulled from the API. For example, if `1.17.2` was one of the downloaded definitions of the mwoffliner scraper, you want to set `definition_version` under the `ZIMFARM` section:
 
   ```py
     "ZIMFARM": {
@@ -274,7 +277,7 @@ pipenv run flask --app wp1.web.app --debug run
 ```
 
 If you're having difficulties connecting to the backend server from the
-frontend, especially in cypress e2e tests, and espcially on macOS, it might have
+frontend, especially in cypress e2e tests, and especially on macOS, it might have
 something to do with IPv4 versus IPv6 networking stacks. You can try adding the
 option `--host 127.0.0.1` to the command line above (see
 https://github.com/openzim/wp1/pull/859).

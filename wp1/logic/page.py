@@ -4,7 +4,7 @@ from datetime import datetime
 import requests
 
 import wp1.logic.util as logic_util
-from wp1.constants import GLOBAL_TIMESTAMP, TS_FORMAT
+from wp1.constants import GLOBAL_TIMESTAMP, TS_FORMAT, TS_FORMAT_WP10
 from wp1.logic import log as logic_log
 from wp1.logic import move as logic_move
 from wp1.logic.api import page as api_page
@@ -87,25 +87,29 @@ def update_page_moved(
 def _get_redirects_from_db(wikidb, namespace, title, timestamp_dt):
     wiki_db_title = title.decode("utf-8").replace(" ", "_")
     wikidb.ping()
-    args_dict = {"title": wiki_db_title, "namespace": namespace}
+    args_dict = {
+        "title": wiki_db_title,
+        "namespace": namespace,
+        "timestamp": timestamp_dt.strftime(TS_FORMAT_WP10),
+    }
     with wikidb.cursor() as cursor:
         cursor.execute(
             """
         SELECT rd_namespace, rd_title, page_touched FROM page
         JOIN redirect ON page_id = rd_from AND
              page_title = %(title)s AND page_namespace = %(namespace)s
+        WHERE page_touched > %(timestamp)s
     """,
             args_dict,
         )
         row = cursor.fetchone()
         if row:
-            timestamp_dt = datetime.strptime(
-                row["page_touched"].decode("utf-8"), "%Y%m%d%H%M%S"
-            )
             return {
                 "dest_ns": row["rd_namespace"],
                 "dest_title": row["rd_title"],
-                "timestamp_dt": timestamp_dt,
+                "timestamp_dt": datetime.strptime(
+                    row["page_touched"].decode("utf-8"), TS_FORMAT_WP10
+                ),
             }
         return None
 

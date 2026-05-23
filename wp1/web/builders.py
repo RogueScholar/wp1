@@ -1,4 +1,5 @@
 import logging
+import requests
 
 import flask
 
@@ -10,9 +11,14 @@ from wp1 import queues
 from wp1.constants import EXT_TO_CONTENT_TYPE
 from wp1.credentials import CREDENTIALS, ENV
 from wp1.exceptions import (
-    InvalidZimDescriptionError, InvalidZimLongDescriptionError,
-    InvalidZimTitleError, ObjectNotFoundError, UserNotAuthorizedError,
-    ZimFarmError, ZimFarmTooManyArticlesError,
+    InvalidZimDescriptionError,
+    InvalidZimFlavourError,
+    InvalidZimLongDescriptionError,
+    InvalidZimTitleError,
+    ObjectNotFoundError,
+    UserNotAuthorizedError,
+    ZimFarmError,
+    ZimFarmTooManyArticlesError,
 )
 from wp1.web import authenticate, emails
 from wp1.web.db import get_db
@@ -215,6 +221,7 @@ def create_zim_file_for_builder(builder_id):
     title = data.get("title")
     desc = data.get("description")
     long_desc = data.get("long_description")
+    flavour = data.get("flavour")
     scheduled_repetitions = data.get("scheduled_repetitions")
 
     error_messages = []
@@ -243,9 +250,15 @@ def create_zim_file_for_builder(builder_id):
 
     try:
         logic_builder.handle_zim_generation(
-            redis, wp10db, builder_id, user_id = user_id, title = title,
-            description = desc, long_description = long_desc,
-            scheduled_repetitions = scheduled_repetitions,
+            redis,
+            wp10db,
+            builder_id,
+            user_id=user_id,
+            title=title,
+            description=desc,
+            long_description=long_desc,
+            flavour=flavour,
+            scheduled_repetitions=scheduled_repetitions,
         )
     except ObjectNotFoundError:
         return (
@@ -268,6 +281,7 @@ def create_zim_file_for_builder(builder_id):
     except (
         InvalidZimTitleError, InvalidZimDescriptionError,
         InvalidZimLongDescriptionError,
+        InvalidZimFlavourError,
     ) as e:
         return flask.jsonify({ "error_messages": [str(e)]}), 400
     except ZimFarmError as e:
@@ -342,7 +356,11 @@ def latest_zim_file_for_builder(builder_id):
     if not url:
         flask.abort(404)
 
-    return flask.redirect(url, code = 302)
+    head = requests.head(url)
+    if head.status_code == 404:
+        flask.abort(410)
+
+    return flask.redirect(url, code=302)
 
 
 @builders.route("/<builder_id>/schedule", methods = ["DELETE"])
