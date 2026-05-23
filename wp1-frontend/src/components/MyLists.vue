@@ -207,7 +207,7 @@ export default {
         {
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-        }
+        },
       );
       var data = await response.json();
       this.list = data.builders;
