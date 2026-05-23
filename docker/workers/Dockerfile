@@ -1,4 +1,4 @@
-FROM python:3.12.0
+FROM python:3.14.4
 
 # Meta
 LABEL maintainer="kiwix"

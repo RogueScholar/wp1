@@ -1164,7 +1164,7 @@ class BuilderTest(BaseWpOneDbTest):
         "wp1.logic.builder.utcnow",
         return_value=datetime.datetime(2022, 12, 25, 0, 1, 2),
     )
-    @patch("wp1.logic.builder.zimfarm.get_zimfarm_token", return_value="test_token")
+    @patch("wp1.logic.builder.zimfarm.token_provider", return_value="test_token")
     def test_handle_zim_generation_long_title(
         self, mock_utcnow, mock_get_zimfarm_token
     ):
@@ -1833,7 +1833,7 @@ class BuilderTest(BaseWpOneDbTest):
         self, mock_utcnow, mock_request_zimfarm_task
     ):
         """
-        Ensure the existing zim_task is updated (not dupplicated) when the selection version changes.
+        Ensure the existing zim_task is updated (not duplicated) when the selection version changes.
         """
         self._insert_builder()
         zim_schedule_id = self._setup_failed_zim_regeneration_scenario(
